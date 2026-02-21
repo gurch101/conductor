@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, mock, afterEach } from 'bun:test';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TeamCard } from '@/components/TeamCard';
 import type { Team } from '@/types';
 
 describe('TeamCard Component', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   const mockTeam: Team = {
     id: '1',
     name: 'Test Team',
@@ -14,9 +18,31 @@ describe('TeamCard Component', () => {
   };
 
   it('renders team name and objective', () => {
-    render(<TeamCard team={mockTeam} onClick={() => {}} />);
+    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Test Team')).toBeDefined();
     expect(screen.getByText('Test Objective')).toBeDefined();
+  });
+
+  it('calls onClick when the card is clicked', () => {
+    const handleClick = mock(() => {});
+    render(<TeamCard team={mockTeam} onClick={handleClick} onDelete={() => {}} />);
+    fireEvent.click(screen.getByText('Test Team'));
+    expect(handleClick).toHaveBeenCalled();
+  });
+
+  it('calls onDelete when the delete option is clicked in the menu', () => {
+    const handleDelete = mock(() => {});
+    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={handleDelete} />);
+
+    // 1. Click menu button (MoreVertical icon button)
+    const menuButton = screen.getByLabelText('Open menu');
+    fireEvent.click(menuButton);
+
+    // 2. Click Delete Team button
+    const deleteButton = screen.getByText('Delete Team');
+    fireEvent.click(deleteButton);
+
+    expect(handleDelete).toHaveBeenCalledWith('1');
   });
 
   it("shows 'Done' status when all agents are done", () => {
@@ -36,7 +62,7 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithDoneAgents} onClick={() => {}} />);
+    render(<TeamCard team={teamWithDoneAgents} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Done')).toBeDefined();
   });
 
@@ -68,7 +94,7 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithActionNeeded} onClick={() => {}} />);
+    render(<TeamCard team={teamWithActionNeeded} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Action Needed')).toBeDefined();
   });
 });

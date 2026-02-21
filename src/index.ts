@@ -18,9 +18,16 @@ export const appOptions = {
     '/api/teams': {
       GET: () => Response.json(TeamService.getAllTeams()),
       POST: async (req: Request) => {
-        const { name, objective } = (await req.json()) as { name: string; objective: string };
-        const team = TeamService.createTeam(name, objective);
-        return Response.json(team);
+        try {
+          const { name, objective } = (await req.json()) as { name: string; objective: string };
+          const team = TeamService.createTeam(name, objective);
+          return Response.json(team);
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
       },
     },
 
@@ -29,6 +36,24 @@ export const appOptions = {
         const team = TeamService.getTeamById(req.params.id);
         if (!team) return new Response('Not Found', { status: 404 });
         return Response.json(team);
+      },
+      PUT: async (req: Request) => {
+        try {
+          const id = req.params.id;
+          const { name, objective } = (await req.json()) as { name: string; objective: string };
+          TeamService.updateTeam(id, name, objective);
+          return Response.json({ success: true });
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      },
+      DELETE: (req) => {
+        const id = req.params.id;
+        TeamService.deleteTeam(id);
+        return Response.json({ success: true });
       },
     },
 

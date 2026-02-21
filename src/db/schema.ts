@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 
 export const teams = sqliteTable('teams', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   objective: text('objective'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
