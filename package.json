@@ -11,7 +11,7 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "test": "bun test tests/**/*.test.{ts,tsx} tests/*.test.ts",
     "test:coverage": "bun test --coverage",
-    "changelog": "conventional-changelog -p angular -i website/docs/CHANGELOG.md -s -r 0",
+    "changelog": "echo '---\ntitle: Changelog\n---\n' > website/docs/CHANGELOG.md.tmp && conventional-changelog -p angular -r 0 >> website/docs/CHANGELOG.md.tmp && mv website/docs/CHANGELOG.md.tmp website/docs/CHANGELOG.md",
     "prepare": "husky"
   },
   "dependencies": {
