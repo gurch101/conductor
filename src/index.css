@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* React Flow attribution hidden for cleaner UI as per developer-centric theme */
+.react-flow__attribution {
+  display: none;
+}
