@@ -1,9 +1,9 @@
-import { Database } from "bun:sqlite";
+import { Database } from 'bun:sqlite';
 
-const db = new Database("conductor.sqlite", { create: true });
+const db = new Database('conductor.sqlite', { create: true });
 
 export function initDb() {
-  db.run("PRAGMA foreign_keys = ON;");
+  db.run('PRAGMA foreign_keys = ON;');
   db.run(`
     CREATE TABLE IF NOT EXISTS teams (
       id TEXT PRIMARY KEY,
@@ -65,7 +65,9 @@ export function initDb() {
   `);
 
   // Seed Personas if empty
-  const personaCount = db.prepare("SELECT COUNT(*) as count FROM personas").get() as { count: number };
+  const personaCount = db.prepare('SELECT COUNT(*) as count FROM personas').get() as {
+    count: number;
+  };
   if (personaCount.count === 0) {
     const seedPersonas = [
       {
@@ -74,7 +76,7 @@ export function initDb() {
         avatar: '🔍',
         system_prompt: 'You are an expert researcher...',
         input_schema: JSON.stringify([{ name: 'topic', type: 'text' }]),
-        output_schema: JSON.stringify([{ name: 'findings', type: 'markdown' }])
+        output_schema: JSON.stringify([{ name: 'findings', type: 'markdown' }]),
       },
       {
         id: 'p2',
@@ -82,11 +84,13 @@ export function initDb() {
         avatar: '💻',
         system_prompt: 'You are an expert software engineer...',
         input_schema: JSON.stringify([{ name: 'spec', type: 'markdown' }]),
-        output_schema: JSON.stringify([{ name: 'code', type: 'text' }])
-      }
+        output_schema: JSON.stringify([{ name: 'code', type: 'text' }]),
+      },
     ];
 
-    const insert = db.prepare("INSERT INTO personas (id, name, avatar, system_prompt, input_schema, output_schema) VALUES ($id, $name, $avatar, $system_prompt, $input_schema, $output_schema)");
+    const insert = db.prepare(
+      'INSERT INTO personas (id, name, avatar, system_prompt, input_schema, output_schema) VALUES ($id, $name, $avatar, $system_prompt, $input_schema, $output_schema)'
+    );
     for (const p of seedPersonas) {
       insert.run({
         $id: p.id,
@@ -94,7 +98,7 @@ export function initDb() {
         $avatar: p.avatar,
         $system_prompt: p.system_prompt,
         $input_schema: p.input_schema,
-        $output_schema: p.output_schema
+        $output_schema: p.output_schema,
       });
     }
   }

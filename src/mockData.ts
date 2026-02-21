@@ -12,7 +12,11 @@ export const MOCK_TEAMS: Team[] = [
         status: 'done',
         summary: 'Gathered key facts about Quantum Bits and Superposition.',
         tokensUsed: 1200,
-        logs: ['Searching for quantum computing basics...', 'Found 5 sources.', 'Synthesizing data.']
+        logs: [
+          'Searching for quantum computing basics...',
+          'Found 5 sources.',
+          'Synthesizing data.',
+        ],
       },
       {
         id: 'agent-2',
@@ -20,12 +24,10 @@ export const MOCK_TEAMS: Team[] = [
         status: 'working',
         summary: 'Drafting the introduction and main sections.',
         tokensUsed: 800,
-        logs: ['Starting draft...', 'Writing about qubits.']
-      }
+        logs: ['Starting draft...', 'Writing about qubits.'],
+      },
     ],
-    connections: [
-      { source: 'agent-1', target: 'agent-2' }
-    ]
+    connections: [{ source: 'agent-1', target: 'agent-2' }],
   },
   {
     id: '2',
@@ -38,7 +40,7 @@ export const MOCK_TEAMS: Team[] = [
         status: 'done',
         summary: 'Checked for syntax errors and style violations.',
         tokensUsed: 400,
-        logs: ['Running ESLint...', 'No critical errors found.']
+        logs: ['Running ESLint...', 'No critical errors found.'],
       },
       {
         id: 'agent-4',
@@ -46,12 +48,10 @@ export const MOCK_TEAMS: Team[] = [
         status: 'waiting_approval',
         summary: 'Flagged a potential ReDoS in the email regex.',
         tokensUsed: 650,
-        logs: ['Scanning for vulnerabilities...', 'Flagged email regex for review.']
-      }
+        logs: ['Scanning for vulnerabilities...', 'Flagged email regex for review.'],
+      },
     ],
-    connections: [
-      { source: 'agent-3', target: 'agent-4' }
-    ]
+    connections: [{ source: 'agent-3', target: 'agent-4' }],
   },
   {
     id: '3',
@@ -64,11 +64,11 @@ export const MOCK_TEAMS: Team[] = [
         status: 'done',
         summary: 'Prepared the staging environment.',
         tokensUsed: 300,
-        logs: ['Staging ready.', 'Health checks passed.']
-      }
+        logs: ['Staging ready.', 'Health checks passed.'],
+      },
     ],
-    connections: []
-  }
+    connections: [],
+  },
 ];
 
 export const PREDEFINED_PERSONAS = [

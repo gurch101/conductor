@@ -1,18 +1,18 @@
-import React, { useCallback, useState, useRef } from 'react';
-import ReactFlow, { 
-  Background, 
-  Controls, 
-  Connection, 
-  Edge, 
-  Node, 
-  addEdge, 
-  useNodesState, 
+import React, { useCallback, useRef } from 'react';
+import ReactFlow, {
+  Background,
+  Controls,
+  Connection,
+  Edge,
+  Node,
+  addEdge,
+  useNodesState,
   useEdgesState,
-  MarkerType
+  MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { AgentNode } from './AgentNode';
-import { Team, Agent } from '../types';
+import { Team, Agent, Persona } from '../types';
 
 const nodeTypes = {
   agent: AgentNode,
@@ -25,7 +25,7 @@ interface FlowCanvasProps {
 
 export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdate }) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  
+
   // Convert agents to nodes
   const initialNodes: Node[] = (team.agents || []).map((agent) => ({
     id: agent.id,
@@ -51,32 +51,38 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  const syncChanges = useCallback(async (newNodes: Node[], newEdges: Edge[]) => {
-    const updatedAgents = newNodes.map(n => n.data as Agent);
-    const updatedConnections = newEdges.map(e => ({ 
-      source: e.source!, 
-      source_handle: e.sourceHandle || undefined,
-      target: e.target!,
-      target_handle: e.targetHandle || undefined
-    }));
-    
-    onUpdate({
-      ...team,
-      agents: updatedAgents,
-      connections: updatedConnections
-    });
-  }, [onUpdate, team]);
+  const syncChanges = useCallback(
+    async (newNodes: Node[], newEdges: Edge[]) => {
+      const updatedAgents = newNodes.map((n) => n.data as Agent);
+      const updatedConnections = newEdges.map((e) => ({
+        source: e.source!,
+        source_handle: e.sourceHandle || undefined,
+        target: e.target!,
+        target_handle: e.targetHandle || undefined,
+      }));
+
+      onUpdate({
+        ...team,
+        agents: updatedAgents,
+        connections: updatedConnections,
+      });
+    },
+    [onUpdate, team]
+  );
 
   const onConnect = useCallback(
     async (params: Connection) => {
       setEdges((eds) => {
-        const nextEdges = addEdge({ 
-          ...params, 
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#475569' },
-          style: { stroke: '#475569', strokeWidth: 2 } 
-        }, eds);
+        const nextEdges = addEdge(
+          {
+            ...params,
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#475569' },
+            style: { stroke: '#475569', strokeWidth: 2 },
+          },
+          eds
+        );
         syncChanges(nodes, nextEdges);
-        
+
         // Persist connection to backend
         fetch('/api/connections', {
           method: 'POST',
@@ -86,8 +92,8 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
             source_id: params.source,
             source_handle: params.sourceHandle,
             target_id: params.target,
-            target_handle: params.targetHandle
-          })
+            target_handle: params.targetHandle,
+          }),
         });
 
         return nextEdges;
@@ -117,9 +123,9 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
 
       try {
         const pResp = await fetch('/api/personas');
-        const personas = await pResp.json();
-        const persona = personas.find((p: any) => p.id === personaId);
-        
+        const personas = (await pResp.json()) as Persona[];
+        const persona = personas.find((p) => p.id === personaId);
+
         if (!persona) return;
 
         const newAgent: Agent = {
@@ -133,7 +139,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
           output_schema: persona.output_schema,
           logs: [`Agent ${persona.name} initialized.`],
           pos_x: position.x,
-          pos_y: position.y
+          pos_y: position.y,
         };
 
         const newNode: Node = {
@@ -153,7 +159,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
         await fetch('/api/agents', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newAgent)
+          body: JSON.stringify(newAgent),
         });
       } catch (error) {
         console.error('Failed to drop agent:', error);

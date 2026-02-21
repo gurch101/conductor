@@ -8,9 +8,9 @@ interface TeamCardProps {
 }
 
 export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick }) => {
-  const allDone = team.agents.length > 0 && team.agents.every(a => a.status === 'done');
-  const hasYellow = team.agents.some(a => a.status === 'waiting_approval');
-  const hasWorking = team.agents.some(a => a.status === 'working');
+  const allDone = team.agents.length > 0 && team.agents.every((a) => a.status === 'done');
+  const hasYellow = team.agents.some((a) => a.status === 'waiting_approval');
+  const hasWorking = team.agents.some((a) => a.status === 'working');
 
   let statusColor = 'border-slate-700 bg-slate-800/50 text-slate-500';
   let StatusIcon = PlayCircle;
@@ -27,10 +27,10 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick }) => {
   }
 
   const totalTokens = team.agents.reduce((acc, curr) => acc + curr.tokensUsed, 0);
-  const cost = (totalTokens / 1000 * 0.02).toFixed(2);
+  const cost = ((totalTokens / 1000) * 0.02).toFixed(2);
 
   return (
-    <div 
+    <div
       onClick={() => onClick(team)}
       className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all cursor-pointer group flex flex-col min-h-[240px]"
     >
@@ -38,16 +38,16 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick }) => {
         <h3 className="text-xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
           {team.name}
         </h3>
-        <div className={`px-2 py-1 rounded-full border text-xs flex items-center gap-1 shrink-0 ${statusColor}`}>
+        <div
+          className={`px-2 py-1 rounded-full border text-xs flex items-center gap-1 shrink-0 ${statusColor}`}
+        >
           <StatusIcon size={14} />
           {allDone ? 'Done' : hasYellow ? 'Action Needed' : 'Working'}
         </div>
       </div>
-      
-      <p className="text-slate-400 text-sm line-clamp-3 mb-6">
-        {team.objective}
-      </p>
-      
+
+      <p className="text-slate-400 text-sm line-clamp-3 mb-6">{team.objective}</p>
+
       <div className="mt-auto pt-4 border-t border-slate-800/50 flex items-center justify-between text-slate-500 text-xs">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
