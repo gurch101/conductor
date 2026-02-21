@@ -1,5 +1,5 @@
 import { AgentRepository } from '@/repositories/AgentRepository';
-import { Agent } from '@/types';
+import type { Agent } from '@/types';
 
 /**
  * Service for managing agents.

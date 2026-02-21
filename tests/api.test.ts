@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'bun:test';
 import { server } from '@/index';
 import { initDb } from '@/db/schema';
-import { Team, Persona } from '@/types';
+import type { Team, Persona } from '@/types';
 
 describe('Server API', () => {
   beforeAll(() => {
@@ -14,8 +14,8 @@ describe('Server API', () => {
     const personas = (await res.json()) as Persona[];
     expect(Array.isArray(personas)).toBe(true);
     expect(personas.length).toBeGreaterThan(0);
-    expect(personas[0].name).toBeDefined();
-    expect(personas[0].avatar).toBeDefined();
+    expect(personas[0]?.name).toBeDefined();
+    expect(personas[0]?.avatar).toBeDefined();
   });
 
   it('POST /api/teams - should create a new team', async () => {
@@ -79,7 +79,7 @@ describe('Server API', () => {
     const teamRes = await server.fetch(new Request(`http://localhost/api/teams/${team.id}`));
     const hydratedTeam = (await teamRes.json()) as Team;
     expect(hydratedTeam.agents.length).toBe(1);
-    expect(hydratedTeam.agents[0].role).toBe('Tester');
+    expect(hydratedTeam.agents[0]?.role).toBe('Tester');
   });
 
   it('POST /api/connections - should connect two agents', async () => {
@@ -132,7 +132,7 @@ describe('Server API', () => {
     const teamRes = await server.fetch(new Request(`http://localhost/api/teams/${team.id}`));
     const hydratedTeam = (await teamRes.json()) as Team;
     expect(hydratedTeam.connections.length).toBe(1);
-    expect(hydratedTeam.connections[0].source).toBe('test-agent-1');
-    expect(hydratedTeam.connections[0].target).toBe('test-agent-2');
+    expect(hydratedTeam.connections[0]?.source).toBe('test-agent-1');
+    expect(hydratedTeam.connections[0]?.target).toBe('test-agent-2');
   });
 });

@@ -1,10 +1,8 @@
 import React, { useCallback, useRef } from 'react';
+import type { Connection, Edge, Node } from 'reactflow';
 import ReactFlow, {
   Background,
   Controls,
-  Connection,
-  Edge,
-  Node,
   addEdge,
   useNodesState,
   useEdgesState,
@@ -12,7 +10,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { AgentNode } from './AgentNode';
-import { Team, Agent, Persona } from '../types';
+import type { Team, Agent, Persona } from '../types';
 
 const nodeTypes = {
   agent: AgentNode,

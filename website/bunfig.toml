@@ -1,0 +1,3 @@
+[install]
+# Docusaurus uses some packages that might require this
+# but for most cases Bun works fine with its default settings.

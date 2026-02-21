@@ -4,3 +4,8 @@ env = "BUN_PUBLIC_*"
 
 [test]
 preload = ["./tests/setup.ts"]
+
+[test.coverageThreshold]
+line = 0.8
+statement = 0.8
+function = 0.7

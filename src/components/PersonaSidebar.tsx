@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Info } from 'lucide-react';
-import { Persona } from '../types';
+import type { Persona } from '../types';
 
 interface PersonaSidebarProps {
   onCreateClick: () => void;

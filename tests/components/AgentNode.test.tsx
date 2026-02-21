@@ -2,7 +2,7 @@ import { describe, it, expect, mock } from 'bun:test';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { AgentNode } from '@/components/AgentNode';
-import { Agent } from '@/types';
+import type { Agent } from '@/types';
 
 // Mock React Flow
 mock.module('reactflow', () => ({

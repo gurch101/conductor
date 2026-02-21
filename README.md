@@ -1,21 +1,25 @@
-# bun-react-tailwind-template
+# Conductor
 
-To install dependencies:
+Orchestrate your AI agents with ease.
+
+## Installation
 
 ```bash
 bun install
 ```
 
-To start a development server:
+## Development
 
 ```bash
 bun dev
 ```
 
-To run for production:
+## Documentation
+
+The documentation is located in the `website` directory. To run the documentation site:
 
 ```bash
-bun start
+cd website
+npm install
+npm start
 ```
-
-This project was created using `bun init` in bun v1.3.9. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

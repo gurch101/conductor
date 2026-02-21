@@ -10,6 +10,8 @@
     "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "test": "bun test tests/**/*.test.{ts,tsx} tests/*.test.ts",
+    "test:coverage": "bun test --coverage",
+    "changelog": "echo '---\ntitle: Changelog\n---\n' > website/docs/CHANGELOG.md.tmp && conventional-changelog -p angular -r 0 >> website/docs/CHANGELOG.md.tmp && mv website/docs/CHANGELOG.md.tmp website/docs/CHANGELOG.md",
     "prepare": "husky"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
+    "conventional-changelog-cli": "^5.0.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsdoc": "^62.7.0",
