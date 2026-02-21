@@ -68,6 +68,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
+              aria-label="Open menu"
               className="p-1 hover:bg-slate-800 rounded-md text-slate-500 hover:text-slate-300 transition-colors"
             >
               <MoreVertical size={16} />

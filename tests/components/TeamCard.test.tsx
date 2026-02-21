@@ -1,10 +1,14 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, mock, afterEach } from 'bun:test';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TeamCard } from '@/components/TeamCard';
 import type { Team } from '@/types';
 
 describe('TeamCard Component', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   const mockTeam: Team = {
     id: '1',
     name: 'Test Team',
@@ -31,9 +35,7 @@ describe('TeamCard Component', () => {
     render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={handleDelete} />);
 
     // 1. Click menu button (MoreVertical icon button)
-    // We can find it by its svg container or just by querying all buttons
-    const buttons = screen.getAllByRole('button');
-    const menuButton = buttons[0]; // The first one is our MoreVertical menu
+    const menuButton = screen.getByLabelText('Open menu');
     fireEvent.click(menuButton);
 
     // 2. Click Delete Team button
