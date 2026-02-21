@@ -1,5 +1,5 @@
 import db from '@/db/schema';
-import { DBTeam } from '@/types';
+import type { DBTeam } from '@/types';
 
 /**
  * Repository for managing teams in the database.

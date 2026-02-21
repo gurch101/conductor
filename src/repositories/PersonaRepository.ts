@@ -1,5 +1,5 @@
 import db from '@/db/schema';
-import { DBPersona } from '@/types';
+import type { DBPersona } from '@/types';
 
 /**
  * Repository for managing personas in the database.

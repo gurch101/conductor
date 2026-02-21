@@ -1,5 +1,5 @@
 import { PersonaRepository } from '@/repositories/PersonaRepository';
-import { Persona } from '@/types';
+import type { Persona } from '@/types';
 
 /**
  * Service for managing personas.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Team } from '../types';
+import type { Team } from '../types';
 import { Users, Coins, CheckCircle2, AlertCircle, PlayCircle } from 'lucide-react';
 
 interface TeamCardProps {

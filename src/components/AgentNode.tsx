@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position } from 'reactflow';
-import { Agent } from '../types';
+import type { Agent } from '../types';
 import { Coins, Terminal, Pause, Play, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AgentNodeProps {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Team, Agent } from './types';
+import type { Team, Agent } from './types';
 import { TeamCard } from './components/TeamCard';
 import { FlowCanvas } from './components/FlowCanvas';
 import { PersonaSidebar } from './components/PersonaSidebar';

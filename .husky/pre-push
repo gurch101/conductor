@@ -1,1 +1,1 @@
-bun run lint && bun prettier --check 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' && bun run test
+bun run lint && bun prettier --check 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}' && bun run test:coverage

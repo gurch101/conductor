@@ -1,7 +1,7 @@
 import { TeamRepository } from '@/repositories/TeamRepository';
 import { AgentRepository } from '@/repositories/AgentRepository';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
-import { Team, Agent, DBTeam } from '@/types';
+import type { Team, Agent, DBTeam } from '@/types';
 
 /**
  * Service for managing teams and their associated agents and connections.

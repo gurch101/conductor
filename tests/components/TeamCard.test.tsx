@@ -2,7 +2,7 @@ import { describe, it, expect } from 'bun:test';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TeamCard } from '@/components/TeamCard';
-import { Team } from '@/types';
+import type { Team } from '@/types';
 
 describe('TeamCard Component', () => {
   const mockTeam: Team = {

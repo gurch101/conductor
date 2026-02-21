@@ -1,5 +1,5 @@
 import db from '@/db/schema';
-import { DBAgent, Agent } from '@/types';
+import type { DBAgent, Agent } from '@/types';
 
 /**
  * Repository for managing agents in the database.

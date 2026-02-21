@@ -1,5 +1,5 @@
 import db from '@/db/schema';
-import { DBConnection } from '@/types';
+import type { DBConnection } from '@/types';
 
 /**
  * Repository for managing agent connections in the database.

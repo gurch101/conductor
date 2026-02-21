@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Send, Terminal, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
-import { Agent, Team } from '../types';
+import type { Agent, Team } from '../types';
 
 interface AgentChatProps {
   team: Team;

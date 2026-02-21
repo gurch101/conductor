@@ -27,6 +27,7 @@ export default [
         ...globals.node,
         ...globals.jest,
         crypto: 'readonly',
+        Bun: 'readonly',
       },
     },
     plugins: {

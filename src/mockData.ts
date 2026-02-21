@@ -1,4 +1,4 @@
-import { Team } from './types';
+import type { Team } from './types';
 
 export const MOCK_TEAMS: Team[] = [
   {
@@ -8,10 +8,13 @@ export const MOCK_TEAMS: Team[] = [
     agents: [
       {
         id: 'agent-1',
+        team_id: '1',
         role: 'Researcher',
         status: 'done',
         summary: 'Gathered key facts about Quantum Bits and Superposition.',
         tokensUsed: 1200,
+        input_schema: [],
+        output_schema: [],
         logs: [
           'Searching for quantum computing basics...',
           'Found 5 sources.',
@@ -20,10 +23,13 @@ export const MOCK_TEAMS: Team[] = [
       },
       {
         id: 'agent-2',
+        team_id: '1',
         role: 'Writer',
         status: 'working',
         summary: 'Drafting the introduction and main sections.',
         tokensUsed: 800,
+        input_schema: [],
+        output_schema: [],
         logs: ['Starting draft...', 'Writing about qubits.'],
       },
     ],
@@ -36,18 +42,24 @@ export const MOCK_TEAMS: Team[] = [
     agents: [
       {
         id: 'agent-3',
+        team_id: '2',
         role: 'Linter',
         status: 'done',
         summary: 'Checked for syntax errors and style violations.',
         tokensUsed: 400,
+        input_schema: [],
+        output_schema: [],
         logs: ['Running ESLint...', 'No critical errors found.'],
       },
       {
         id: 'agent-4',
+        team_id: '2',
         role: 'Security Auditor',
         status: 'waiting_approval',
         summary: 'Flagged a potential ReDoS in the email regex.',
         tokensUsed: 650,
+        input_schema: [],
+        output_schema: [],
         logs: ['Scanning for vulnerabilities...', 'Flagged email regex for review.'],
       },
     ],
@@ -60,10 +72,13 @@ export const MOCK_TEAMS: Team[] = [
     agents: [
       {
         id: 'agent-5',
+        team_id: '3',
         role: 'DevOps',
         status: 'done',
         summary: 'Prepared the staging environment.',
         tokensUsed: 300,
+        input_schema: [],
+        output_schema: [],
         logs: ['Staging ready.', 'Health checks passed.'],
       },
     ],
