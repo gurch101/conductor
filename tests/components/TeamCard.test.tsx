@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, mock } from 'bun:test';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { TeamCard } from '@/components/TeamCard';
 import type { Team } from '@/types';
 
@@ -17,6 +17,30 @@ describe('TeamCard Component', () => {
     render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Test Team')).toBeDefined();
     expect(screen.getByText('Test Objective')).toBeDefined();
+  });
+
+  it('calls onClick when the card is clicked', () => {
+    const handleClick = mock(() => {});
+    render(<TeamCard team={mockTeam} onClick={handleClick} onDelete={() => {}} />);
+    fireEvent.click(screen.getByText('Test Team'));
+    expect(handleClick).toHaveBeenCalled();
+  });
+
+  it('calls onDelete when the delete option is clicked in the menu', () => {
+    const handleDelete = mock(() => {});
+    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={handleDelete} />);
+
+    // 1. Click menu button (MoreVertical icon button)
+    // We can find it by its svg container or just by querying all buttons
+    const buttons = screen.getAllByRole('button');
+    const menuButton = buttons[0]; // The first one is our MoreVertical menu
+    fireEvent.click(menuButton);
+
+    // 2. Click Delete Team button
+    const deleteButton = screen.getByText('Delete Team');
+    fireEvent.click(deleteButton);
+
+    expect(handleDelete).toHaveBeenCalledWith('1');
   });
 
   it("shows 'Done' status when all agents are done", () => {
