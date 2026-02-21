@@ -49,6 +49,7 @@ const config: Config = {
         out: 'docs/reference',
         tsconfig: '../tsconfig.json',
         name: 'Conductor',
+        readme: 'none',
       },
     ],
   ],

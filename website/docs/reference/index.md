@@ -1,25 +1,12 @@
 # Conductor
 
-Orchestrate your AI agents with ease.
+## Modules
 
-## Installation
-
-```bash
-bun install
-```
-
-## Development
-
-```bash
-bun dev
-```
-
-## Documentation
-
-The documentation is located in the `website` directory. To run the documentation site:
-
-```bash
-cd website
-npm install
-npm start
-```
+- [repositories/AgentRepository](repositories/AgentRepository/index.md)
+- [repositories/ConnectionRepository](repositories/ConnectionRepository/index.md)
+- [repositories/PersonaRepository](repositories/PersonaRepository/index.md)
+- [repositories/TeamRepository](repositories/TeamRepository/index.md)
+- [services/AgentService](services/AgentService/index.md)
+- [services/ConnectionService](services/ConnectionService/index.md)
+- [services/PersonaService](services/PersonaService/index.md)
+- [services/TeamService](services/TeamService/index.md)

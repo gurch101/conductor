@@ -1,6 +1,6 @@
 # Class: TeamRepository
 
-Defined in: [repositories/TeamRepository.ts:7](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/TeamRepository.ts#L7)
+Defined in: [repositories/TeamRepository.ts:7](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/TeamRepository.ts#L7)
 
 Repository for managing teams in the database.
 
@@ -20,7 +20,7 @@ Repository for managing teams in the database.
 
 > `static` **create**(`id`, `name`, `objective`): `void`
 
-Defined in: [repositories/TeamRepository.ts:31](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/TeamRepository.ts#L31)
+Defined in: [repositories/TeamRepository.ts:31](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/TeamRepository.ts#L31)
 
 Creates a new team in the database.
 
@@ -54,7 +54,7 @@ The team's objective.
 
 > `static` **findAll**(): `DBTeam`[]
 
-Defined in: [repositories/TeamRepository.ts:12](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/TeamRepository.ts#L12)
+Defined in: [repositories/TeamRepository.ts:12](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/TeamRepository.ts#L12)
 
 Retrieves all teams from the database, ordered by creation date.
 
@@ -70,7 +70,7 @@ A list of database teams.
 
 > `static` **findById**(`id`): `DBTeam` \| `null`
 
-Defined in: [repositories/TeamRepository.ts:21](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/TeamRepository.ts#L21)
+Defined in: [repositories/TeamRepository.ts:21](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/TeamRepository.ts#L21)
 
 Finds a specific team by its ID.
 

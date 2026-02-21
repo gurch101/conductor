@@ -1,6 +1,6 @@
 # Class: ConnectionService
 
-Defined in: [services/ConnectionService.ts:6](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/ConnectionService.ts#L6)
+Defined in: [services/ConnectionService.ts:6](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/services/ConnectionService.ts#L6)
 
 Service for managing agent connections.
 
@@ -20,7 +20,7 @@ Service for managing agent connections.
 
 > `static` **createConnection**(`data`): `void`
 
-Defined in: [services/ConnectionService.ts:16](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/ConnectionService.ts#L16)
+Defined in: [services/ConnectionService.ts:16](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/services/ConnectionService.ts#L16)
 
 Creates a new connection between agents.
 

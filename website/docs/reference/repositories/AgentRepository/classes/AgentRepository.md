@@ -1,6 +1,6 @@
 # Class: AgentRepository
 
-Defined in: [repositories/AgentRepository.ts:7](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/AgentRepository.ts#L7)
+Defined in: [repositories/AgentRepository.ts:7](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/AgentRepository.ts#L7)
 
 Repository for managing agents in the database.
 
@@ -20,7 +20,7 @@ Repository for managing agents in the database.
 
 > `static` **create**(`agent`): `void`
 
-Defined in: [repositories/AgentRepository.ts:33](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/AgentRepository.ts#L33)
+Defined in: [repositories/AgentRepository.ts:33](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/AgentRepository.ts#L33)
 
 Creates a new agent in the database.
 
@@ -42,7 +42,7 @@ The agent object to create.
 
 > `static` **findByTeamId**(`teamId`): `DBAgent`[]
 
-Defined in: [repositories/AgentRepository.ts:13](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/AgentRepository.ts#L13)
+Defined in: [repositories/AgentRepository.ts:13](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/AgentRepository.ts#L13)
 
 Finds agents belonging to a specific team.
 
@@ -66,7 +66,7 @@ A list of database agents.
 
 > `static` **findLogsByAgentId**(`agentId`): `string`[]
 
-Defined in: [repositories/AgentRepository.ts:22](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/AgentRepository.ts#L22)
+Defined in: [repositories/AgentRepository.ts:22](https://github.com/gurch101/conductor/blob/d0eb264fb4ded657d85b032bfb9d2438c6ba551f/src/repositories/AgentRepository.ts#L22)
 
 Finds all logs for a specific agent.
 
