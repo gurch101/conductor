@@ -137,4 +137,30 @@ describe('Server API', () => {
     expect(hydratedTeam.connections[0]?.source).toBe('test-agent-1');
     expect(hydratedTeam.connections[0]?.target).toBe('test-agent-2');
   });
+
+  it('PUT /api/teams/:id - should update team details', async () => {
+    // 1. Get the team
+    const teamsRes = await fetch(`${baseUrl}/api/teams`);
+    const teams = (await teamsRes.json()) as Team[];
+    const team = teams.find((t) => t.name === 'API Test Team')!;
+
+    // 2. Update the team
+    const updatedDetails = {
+      name: 'Updated Test Team',
+      objective: 'Verify update functionality works',
+    };
+    const updateRes = await fetch(`${baseUrl}/api/teams/${team.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedDetails),
+    });
+    expect(updateRes.status).toBe(200);
+    expect((await updateRes.json()).success).toBe(true);
+
+    // 3. Verify it's updated
+    const getRes = await fetch(`${baseUrl}/api/teams/${team.id}`);
+    const updatedTeam = (await getRes.json()) as Team;
+    expect(updatedTeam.name).toBe(updatedDetails.name);
+    expect(updatedTeam.objective).toBe(updatedDetails.objective);
+  });
 });

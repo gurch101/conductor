@@ -14,7 +14,7 @@ describe('TeamCard Component', () => {
   };
 
   it('renders team name and objective', () => {
-    render(<TeamCard team={mockTeam} onClick={() => {}} />);
+    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Test Team')).toBeDefined();
     expect(screen.getByText('Test Objective')).toBeDefined();
   });
@@ -36,7 +36,7 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithDoneAgents} onClick={() => {}} />);
+    render(<TeamCard team={teamWithDoneAgents} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Done')).toBeDefined();
   });
 
@@ -68,7 +68,7 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithActionNeeded} onClick={() => {}} />);
+    render(<TeamCard team={teamWithActionNeeded} onClick={() => {}} onDelete={() => {}} />);
     expect(screen.getByText('Action Needed')).toBeDefined();
   });
 });
