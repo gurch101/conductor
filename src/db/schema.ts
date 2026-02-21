@@ -1,6 +1,8 @@
 import { Database } from 'bun:sqlite';
 
-const db = new Database('conductor.sqlite', { create: true });
+const dbPath =
+  process.env.DATABASE_PATH || (process.env.NODE_ENV === 'test' ? ':memory:' : 'conductor.sqlite');
+const db = new Database(dbPath, { create: true });
 
 export function initDb() {
   db.run('PRAGMA foreign_keys = ON;');
