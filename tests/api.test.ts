@@ -1,0 +1,138 @@
+import { describe, it, expect, beforeAll } from 'bun:test';
+import { server } from '@/index';
+import { initDb } from '@/db/schema';
+import { Team, Persona } from '@/types';
+
+describe('Server API', () => {
+  beforeAll(() => {
+    initDb();
+  });
+
+  it('GET /api/personas - should return default personas', async () => {
+    const res = await server.fetch(new Request('http://localhost/api/personas'));
+    expect(res.status).toBe(200);
+    const personas = (await res.json()) as Persona[];
+    expect(Array.isArray(personas)).toBe(true);
+    expect(personas.length).toBeGreaterThan(0);
+    expect(personas[0].name).toBeDefined();
+    expect(personas[0].avatar).toBeDefined();
+  });
+
+  it('POST /api/teams - should create a new team', async () => {
+    const newTeam = {
+      name: 'API Test Team',
+      objective: 'Verify API functionality',
+    };
+    const res = await server.fetch(
+      new Request('http://localhost/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTeam),
+      })
+    );
+    expect(res.status).toBe(200);
+    const team = (await res.json()) as Team;
+    expect(team.name).toBe(newTeam.name);
+    expect(team.objective).toBe(newTeam.objective);
+    expect(team.id).toBeDefined();
+  });
+
+  it('GET /api/teams - should return all teams', async () => {
+    const res = await server.fetch(new Request('http://localhost/api/teams'));
+    expect(res.status).toBe(200);
+    const teams = (await res.json()) as Team[];
+    expect(Array.isArray(teams)).toBe(true);
+    expect(teams.some((t) => t.name === 'API Test Team')).toBe(true);
+  });
+
+  it('POST /api/agents - should add an agent to a team', async () => {
+    // 1. Get the team we just created
+    const teamsRes = await server.fetch(new Request('http://localhost/api/teams'));
+    const teams = (await teamsRes.json()) as Team[];
+    const team = teams.find((t) => t.name === 'API Test Team')!;
+
+    // 2. Add an agent
+    const newAgent = {
+      id: 'test-agent-1',
+      team_id: team.id,
+      role: 'Tester',
+      status: 'working',
+      summary: 'Testing agent creation',
+      tokens_used: 0,
+      input_schema: JSON.stringify([]),
+      output_schema: JSON.stringify([]),
+      pos_x: 100,
+      pos_y: 100,
+    };
+
+    const res = await server.fetch(
+      new Request('http://localhost/api/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAgent),
+      })
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).success).toBe(true);
+
+    // 3. Verify it's in the team
+    const teamRes = await server.fetch(new Request(`http://localhost/api/teams/${team.id}`));
+    const hydratedTeam = (await teamRes.json()) as Team;
+    expect(hydratedTeam.agents.length).toBe(1);
+    expect(hydratedTeam.agents[0].role).toBe('Tester');
+  });
+
+  it('POST /api/connections - should connect two agents', async () => {
+    // 1. Get the team
+    const teamsRes = await server.fetch(new Request('http://localhost/api/teams'));
+    const teams = (await teamsRes.json()) as Team[];
+    const team = teams.find((t) => t.name === 'API Test Team')!;
+
+    // 2. Add another agent
+    const agent2 = {
+      id: 'test-agent-2',
+      team_id: team.id,
+      role: 'Reviewer',
+      status: 'working',
+      summary: 'Second agent',
+      tokens_used: 0,
+      input_schema: '[]',
+      output_schema: '[]',
+      pos_x: 300,
+      pos_y: 100,
+    };
+    await server.fetch(
+      new Request('http://localhost/api/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(agent2),
+      })
+    );
+
+    // 3. Create connection
+    const connection = {
+      team_id: team.id,
+      source_id: 'test-agent-1',
+      source_handle: 'out',
+      target_id: 'test-agent-2',
+      target_handle: 'in',
+    };
+
+    const res = await server.fetch(
+      new Request('http://localhost/api/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(connection),
+      })
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).success).toBe(true);
+
+    // 4. Verify connection
+    const teamRes = await server.fetch(new Request(`http://localhost/api/teams/${team.id}`));
+    const hydratedTeam = (await teamRes.json()) as Team;
+    expect(hydratedTeam.connections.length).toBe(1);
+    expect(hydratedTeam.connections[0].source).toBe('test-agent-1');
+    expect(hydratedTeam.connections[0].target).toBe('test-agent-2');
+  });
+});

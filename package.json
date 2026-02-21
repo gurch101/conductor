@@ -9,7 +9,7 @@
     "build": "bun run build.ts",
     "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}' 'tests/**/*.{ts,tsx}'",
-    "test": "bun test tests/**/*.test.{ts,tsx}",
+    "test": "bun test tests/**/*.test.{ts,tsx} tests/*.test.ts",
     "prepare": "husky"
   },
   "dependencies": {
