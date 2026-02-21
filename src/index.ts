@@ -72,8 +72,8 @@ export const appOptions = {
   },
 };
 
-export const server = serve(appOptions);
+export const server = process.env.NODE_ENV !== 'test' ? serve(appOptions) : null;
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && server) {
   console.log(`🚀 Server running at ${server.url}`);
 }
