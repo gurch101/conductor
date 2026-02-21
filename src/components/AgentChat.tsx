@@ -52,7 +52,9 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
         {/* Left: Agent Status & Info */}
         <div className="w-80 border-r border-slate-800 bg-slate-900/10 p-6 space-y-6 hidden lg:block overflow-y-auto">
           <div>
-            <label className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-2 block">Current Task</label>
+            <label className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-2 block">
+              Current Task
+            </label>
             <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-800">
               {agent.summary}
             </p>
@@ -64,12 +66,13 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
               <span className="text-xs font-bold uppercase tracking-wider">Approval Required</span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              The agent has flagged a potential issue or reached a decision point that requires human oversight before proceeding.
+              The agent has flagged a potential issue or reached a decision point that requires
+              human oversight before proceeding.
             </p>
           </div>
 
           <div className="space-y-2">
-            <button 
+            <button
               onClick={() => onApprove(agent.id)}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-all shadow-lg shadow-green-900/20"
             >
@@ -87,11 +90,17 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
             <div className="text-[10px] text-slate-600 text-center uppercase tracking-widest mb-8">
               — Agent Execution Log —
             </div>
-            
+
             {agent.logs.map((log, i) => (
               <div key={i} className="flex gap-4 group">
                 <span className="text-slate-700 text-[10px] whitespace-nowrap pt-1">
-                  [{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
+                  [
+                  {new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
+                  ]
                 </span>
                 <div className="flex-1 text-[12px] text-slate-400 group-last:text-blue-400 transition-colors">
                   <span className="text-slate-600 mr-2">$</span>
@@ -99,11 +108,11 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
                 </div>
               </div>
             ))}
-            
+
             <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500/80 text-[11px] italic">
               Wait: Awaiting human feedback to clarify "Security Auditor" findings...
             </div>
-            
+
             <div ref={chatEndRef} />
           </div>
 
@@ -120,7 +129,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
                 placeholder="Clarify objective or provide manual override commands..."
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-12 pr-12 text-sm text-white focus:outline-none focus:border-blue-500 transition-all shadow-inner placeholder:text-slate-600"
               />
-              <button 
+              <button
                 type="submit"
                 disabled={!input.trim()}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-blue-500 hover:text-white disabled:text-slate-700 transition-colors"

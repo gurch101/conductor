@@ -52,17 +52,21 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({ onBack }) => {
     if (!prompt.trim()) return;
 
     const userMessage: Message = { role: 'user', content: prompt };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setPrompt('');
     setIsGenerating(true);
 
     // Mock AI response
     setTimeout(() => {
       setGeneratedSkill(MOCK_GENERATED_SKILL);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "I've generated an initial skill file for you. You can see it on the right. What would you like to adjust?" 
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            "I've generated an initial skill file for you. You can see it on the right. What would you like to adjust?",
+        },
+      ]);
       setIsGenerating(false);
     }, 1500);
   };
@@ -96,17 +100,23 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({ onBack }) => {
                 </div>
                 <h3 className="text-white font-bold mb-2">Generate a New Skill</h3>
                 <p className="text-slate-500 text-xs leading-relaxed">
-                  Describe what you want your agent to be an expert in. I'll draft the system prompts and capabilities.
+                  Describe what you want your agent to be an expert in. I'll draft the system
+                  prompts and capabilities.
                 </p>
               </div>
             ) : (
               messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-xl text-xs ${
-                    msg.role === 'user' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-slate-800 text-slate-200 border border-slate-700'
-                  }`}>
+                <div
+                  key={i}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] p-3 rounded-xl text-xs ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-800 text-slate-200 border border-slate-700'
+                    }`}
+                  >
                     {msg.content}
                   </div>
                 </div>
@@ -140,7 +150,7 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({ onBack }) => {
                   }
                 }}
               />
-              <button 
+              <button
                 type="submit"
                 disabled={!prompt.trim() || isGenerating}
                 className="absolute bottom-3 right-3 p-1.5 text-blue-500 hover:text-white disabled:text-slate-700 transition-colors"
@@ -163,12 +173,14 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({ onBack }) => {
               <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-2 text-slate-400">
                   <FileCode size={16} />
-                  <span className="text-xs font-mono uppercase tracking-widest">agent_skill.md</span>
+                  <span className="text-xs font-mono uppercase tracking-widest">
+                    agent_skill.md
+                  </span>
                 </div>
                 <div className="flex gap-2">
-                   <div className="w-2 h-2 rounded-full bg-green-500/50" />
-                   <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-                   <div className="w-2 h-2 rounded-full bg-red-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-green-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-red-500/50" />
                 </div>
               </div>
               <div className="prose prose-invert prose-slate max-w-none prose-sm sm:prose-base bg-slate-900/50 border border-slate-800 rounded-xl p-8 shadow-2xl min-h-full">
