@@ -1,4 +1,5 @@
 import { PersonaRepository } from '@/repositories/PersonaRepository';
+import { AgentRepository } from '@/repositories/AgentRepository';
 import type { Persona } from '@/types';
 
 /**
@@ -6,8 +7,8 @@ import type { Persona } from '@/types';
  */
 export class PersonaService {
   /**
-   * Retrieves all personas and parses their JSON schemas.
-   * @returns A list of parsed personas.
+   * Retrieves all personas.
+   * @returns A list of personas.
    */
   static getAllPersonas(): Persona[] {
     const personas = PersonaRepository.findAll();
@@ -15,9 +16,21 @@ export class PersonaService {
       id: p.id,
       name: p.name,
       avatar: p.avatar || '',
-      systemPrompt: p.systemPrompt,
-      input_schema: JSON.parse(p.inputSchema || '[]'),
-      output_schema: JSON.parse(p.outputSchema || '[]'),
+      description: p.description || '',
+      skill: p.skill,
     }));
+  }
+
+  /**
+   * Deletes a persona by ID.
+   * @param id The ID of the persona to delete.
+   * @throws Error if the persona is currently in use by an agent.
+   */
+  static deletePersona(id: string): void {
+    const agentsUsingPersona = AgentRepository.findByPersonaId(id);
+    if (agentsUsingPersona.length > 0) {
+      throw new Error('Cannot delete a persona that is currently in use by one or more agents.');
+    }
+    PersonaRepository.delete(id);
   }
 }

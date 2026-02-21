@@ -12,9 +12,8 @@ export const personas = sqliteTable('personas', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   avatar: text('avatar'),
-  systemPrompt: text('system_prompt').notNull(),
-  inputSchema: text('input_schema').default('[]'),
-  outputSchema: text('output_schema').default('[]'),
+  description: text('description'),
+  skill: text('skill').notNull(),
 });
 
 export const agents = sqliteTable('agents', {
@@ -22,7 +21,7 @@ export const agents = sqliteTable('agents', {
   teamId: text('team_id')
     .notNull()
     .references(() => teams.id, { onDelete: 'cascade' }),
-  role: text('role').notNull(),
+  personaId: text('persona_id').references(() => personas.id, { onDelete: 'set null' }),
   status: text('status', { enum: ['done', 'working', 'waiting_approval'] }).default('working'),
   summary: text('summary'),
   tokensUsed: integer('tokens_used').default(0),

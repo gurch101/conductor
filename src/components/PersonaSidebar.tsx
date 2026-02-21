@@ -1,29 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Info } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import type { Persona } from '../types';
+import { ConfirmationModal } from './ConfirmationModal';
 
-interface PersonaSidebarProps {
-  onCreateClick: () => void;
-}
-
-export const PersonaSidebar: React.FC<PersonaSidebarProps> = ({ onCreateClick }) => {
+export const PersonaSidebar: React.FC = () => {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [personaToDelete, setPersonaToDelete] = useState<string | null>(null);
+
+  const fetchPersonas = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/personas');
+      const data = await response.json();
+      setPersonas(data);
+    } catch (error) {
+      console.error('Failed to fetch personas:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPersonas = async () => {
-      try {
-        const response = await fetch('/api/personas');
-        const data = await response.json();
-        setPersonas(data);
-      } catch (error) {
-        console.error('Failed to fetch personas:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchPersonas();
   }, []);
+
+  const handleDeletePersona = async () => {
+    if (!personaToDelete) return;
+
+    try {
+      const response = await fetch(`/api/personas/${personaToDelete}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setPersonas((prev) => prev.filter((p) => p.id !== personaToDelete));
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete persona');
+      }
+    } catch (error) {
+      console.error('Failed to delete persona:', error);
+    } finally {
+      setPersonaToDelete(null);
+    }
+  };
 
   const onDragStart = (event: React.DragEvent, personaId: string) => {
     event.dataTransfer.setData('application/reactflow/personaId', personaId);
@@ -47,7 +67,7 @@ export const PersonaSidebar: React.FC<PersonaSidebarProps> = ({ onCreateClick })
           personas.map((persona) => (
             <div
               key={persona.id}
-              className="p-3 bg-slate-800 border border-slate-700 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-colors group"
+              className="p-3 bg-slate-800 border border-slate-700 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-colors group relative"
               onDragStart={(event) => onDragStart(event, persona.id)}
               draggable
             >
@@ -56,25 +76,40 @@ export const PersonaSidebar: React.FC<PersonaSidebarProps> = ({ onCreateClick })
                   <span className="text-xl">{persona.avatar}</span>
                   <span className="font-medium text-slate-200">{persona.name}</span>
                 </div>
-                <Info size={14} className="text-slate-600 group-hover:text-slate-400" />
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPersonaToDelete(persona.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+                    title="Delete Persona"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
               </div>
               <p className="text-[10px] text-slate-500 line-clamp-2 italic">
-                {persona.systemPrompt}
+                {persona.description || `Skill: ${persona.skill}`}
               </p>
             </div>
           ))
         )}
       </div>
 
-      <div className="p-4 border-t border-slate-800 shrink-0">
-        <button
-          onClick={onCreateClick}
-          className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          Create Persona
-        </button>
-      </div>
+      <ConfirmationModal
+        isOpen={!!personaToDelete}
+        title="Delete Persona?"
+        message={
+          <>
+            Are you sure you want to delete{' '}
+            <strong>{personas.find((p) => p.id === personaToDelete)?.name}</strong>? This will
+            permanently remove it from the library.
+          </>
+        }
+        onConfirm={handleDeletePersona}
+        onCancel={() => setPersonaToDelete(null)}
+      />
     </aside>
   );
 };

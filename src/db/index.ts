@@ -14,31 +14,64 @@ export function initDb() {
   // Automatically migrate the database schema
   migrate(db, { migrationsFolder: 'drizzle' });
 
-  // Seed Personas if empty
-  const personaCount = sqlite.prepare('SELECT COUNT(*) as count FROM personas').get() as {
-    count: number;
-  };
-  if (personaCount.count === 0) {
-    db.insert(schema.personas)
-      .values([
-        {
-          id: 'p1',
-          name: 'Researcher',
-          avatar: '🔍',
-          systemPrompt: 'You are an expert researcher...',
-          inputSchema: JSON.stringify([{ name: 'topic', type: 'text' }]),
-          outputSchema: JSON.stringify([{ name: 'findings', type: 'markdown' }]),
-        },
-        {
-          id: 'p2',
-          name: 'Coder',
-          avatar: '💻',
-          systemPrompt: 'You are an expert software engineer...',
-          inputSchema: JSON.stringify([{ name: 'spec', type: 'markdown' }]),
-          outputSchema: JSON.stringify([{ name: 'code', type: 'text' }]),
-        },
-      ])
-      .run();
+  // Ensure required personas exist and stay up to date.
+  const defaultPersonas = [
+    {
+      id: 'persona-product-manager',
+      name: 'Product Manager',
+      avatar: '📌',
+      description: 'Leads discovery and produces PRD.',
+      skill: 'product-owner-discovery-spec',
+    },
+    {
+      id: 'persona-business-analyst',
+      name: 'Business Analyst (BA)',
+      avatar: '📊',
+      description: 'Translates high-level requirements in the PRD to detailed requirements.',
+      skill: 'product-owner-discovery-spec',
+    },
+    {
+      id: 'persona-solutions-architect',
+      name: 'Solutions Architect',
+      avatar: '🏗️',
+      description: 'Defines how software will be structured to meet requirements.',
+      skill: 'solutions-architect',
+    },
+    {
+      id: 'persona-developer',
+      name: 'Developer',
+      avatar: '💻',
+      description: 'Takes requirements and implements features.',
+      skill: 'coding-implementation',
+    },
+    {
+      id: 'persona-qa-tester',
+      name: 'QA Tester',
+      avatar: '🧪',
+      description: 'Validates quality and expected behavior through testing.',
+      skill: 'qa-testing',
+    },
+    {
+      id: 'persona-devops-engineer',
+      name: 'DevOps Engineer',
+      avatar: '⚙️',
+      description: 'Builds and operates deployment and runtime workflows.',
+      skill: 'devops-engineering',
+    },
+  ];
+
+  for (const persona of defaultPersonas) {
+    sqlite
+      .prepare(
+        `INSERT INTO personas (id, name, avatar, description, skill)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           name = excluded.name,
+           avatar = excluded.avatar,
+           description = excluded.description,
+           skill = excluded.skill`
+      )
+      .run(persona.id, persona.name, persona.avatar, persona.description, persona.skill);
   }
 }
 

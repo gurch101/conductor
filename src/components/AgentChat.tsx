@@ -39,7 +39,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
             <h2 className="font-bold text-sm uppercase tracking-widest text-slate-200">
-              Intervention: <span className="text-blue-500">{agent.role}</span>
+              Intervention: <span className="text-blue-500">{agent.description}</span>
             </h2>
           </div>
         </div>

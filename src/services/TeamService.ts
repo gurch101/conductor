@@ -1,6 +1,7 @@
 import { TeamRepository } from '@/repositories/TeamRepository';
 import { AgentRepository } from '@/repositories/AgentRepository';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
+import { PersonaRepository } from '@/repositories/PersonaRepository';
 import type { Team, Agent, DBTeam } from '@/types';
 
 /**
@@ -91,13 +92,19 @@ export class TeamService {
   private static hydrateTeam(team: DBTeam): Team {
     const agents = AgentRepository.findByTeamId(team.id);
     const connections = ConnectionRepository.findByTeamId(team.id);
+    const personasById = new Map(
+      PersonaRepository.findAll().map((persona) => [persona.id, persona])
+    );
 
     const agentsWithLogs: Agent[] = agents.map((agent) => {
       const logs = AgentRepository.findLogsByAgentId(agent.id);
+      const persona = agent.personaId ? personasById.get(agent.personaId) : null;
       return {
         id: agent.id,
         team_id: agent.teamId,
-        role: agent.role,
+        persona_id: agent.personaId || undefined,
+        persona_name: persona?.name || 'Agent',
+        description: persona?.description || persona?.name || 'Agent',
         status: agent.status,
         summary: agent.summary || '',
         tokensUsed: agent.tokensUsed || 0,
