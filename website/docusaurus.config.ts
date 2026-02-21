@@ -5,7 +5,6 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Conductor',
   tagline: 'Orchestrate your AI agents',
-  favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
   url: 'https://gurch101.github.io',
