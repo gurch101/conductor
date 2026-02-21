@@ -6,6 +6,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 import globals from 'globals';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 export default [
   {
@@ -25,6 +26,7 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.jest,
+        crypto: 'readonly',
       },
     },
     plugins: {
@@ -32,6 +34,7 @@ export default [
       react: react,
       'react-hooks': reactHooks,
       prettier: prettier,
+      jsdoc: jsdoc,
     },
     rules: {
       ...ts.configs.recommended.rules,
@@ -49,6 +52,26 @@ export default [
       react: {
         version: 'detect',
       },
+    },
+  },
+  {
+    files: ['src/services/**/*.ts', 'src/repositories/**/*.ts'],
+    rules: {
+      'jsdoc/require-jsdoc': [
+        'error',
+        {
+          require: {
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+            ClassDeclaration: true,
+            ArrowFunctionExpression: true,
+            FunctionExpression: true,
+          },
+        },
+      ],
+      'jsdoc/require-description': 'error',
+      'jsdoc/require-param': 'error',
+      'jsdoc/require-returns': 'error',
     },
   },
   prettierConfig,

@@ -1,7 +1,14 @@
 import { PersonaRepository } from '@/repositories/PersonaRepository';
 import { Persona } from '@/types';
 
+/**
+ * Service for managing personas.
+ */
 export class PersonaService {
+  /**
+   * Retrieves all personas and parses their JSON schemas.
+   * @returns A list of parsed personas.
+   */
   static getAllPersonas(): Persona[] {
     const personas = PersonaRepository.findAll();
     return personas.map((p) => ({
