@@ -5,12 +5,14 @@ import { TeamCard } from './components/TeamCard';
 import { FlowCanvas } from './components/FlowCanvas';
 import { PersonaSidebar } from './components/PersonaSidebar';
 import { AgentChat } from './components/AgentChat';
+import { TeamOrchestrationChat } from './components/TeamOrchestrationChat';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { Plus, ArrowLeft } from 'lucide-react';
 import { AgentStatus } from './constants/agentStatus';
+import type { AgentStatusValue } from './constants/agentStatus';
 import './index.css';
 
-type View = 'dashboard' | 'builder' | 'agent-chat';
+type View = 'dashboard' | 'builder' | 'agent-chat' | 'team-chat';
 
 export function App() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -48,16 +50,16 @@ export function App() {
 
   const handleTeamClick = (team: Team) => {
     setSelectedTeam(team);
+    setSelectedAgent(null);
     setIsNewTeam(false);
-    const agentNeedingAttention = team.agents.find(
-      (a) => a.status === AgentStatus.WaitingForFeedback
-    );
-    if (agentNeedingAttention) {
-      setSelectedAgent(agentNeedingAttention);
-      setCurrentView('agent-chat');
-    } else {
-      setCurrentView('builder');
-    }
+    setCurrentView('team-chat');
+  };
+
+  const handleEditTeam = (team: Team) => {
+    setSelectedTeam(team);
+    setSelectedAgent(null);
+    setIsNewTeam(false);
+    setCurrentView('builder');
   };
 
   const handleBackToDashboard = () => {
@@ -111,7 +113,8 @@ export function App() {
       });
 
       if (!response.ok) {
-        showError('Failed to delete team.');
+        const errorData = await response.json().catch(() => null);
+        showError(errorData?.error || 'Failed to delete team.');
         return;
       }
 
@@ -169,6 +172,166 @@ export function App() {
     }
   };
 
+  const handleStartTeam = async (team: Team) => {
+    try {
+      const response = await fetch(`/api/teams/${team.id}/start`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showError(errorData.error || 'Failed to start team');
+        return;
+      }
+
+      const updatedTeam = (await response.json()) as Team;
+      setSelectedTeam(updatedTeam);
+      setSelectedAgent(
+        updatedTeam.agents.find((a) => a.status === AgentStatus.WaitingForFeedback) || null
+      );
+      setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
+      setCurrentView('team-chat');
+    } catch (error) {
+      console.error('Failed to start team:', error);
+      showError('An unexpected error occurred while starting the team.');
+    }
+  };
+
+  const handleTeamResponse = async (agentId: string, message: string) => {
+    if (!selectedTeam) return;
+
+    try {
+      const response = await fetch(`/api/teams/${selectedTeam.id}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, message }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showError(errorData.error || 'Failed to send response');
+        return;
+      }
+
+      const updatedTeam = (await response.json()) as Team;
+      setSelectedTeam(updatedTeam);
+      setSelectedAgent(updatedTeam.agents.find((a) => a.id === agentId) || null);
+      setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
+    } catch (error) {
+      console.error('Failed to respond to agent:', error);
+      showError('An unexpected error occurred while sending your response.');
+    }
+  };
+
+  const streamingTeamId = selectedTeam?.id;
+
+  useEffect(() => {
+    if (currentView !== 'team-chat' || !streamingTeamId) return;
+
+    const controller = new AbortController();
+    const teamId = streamingTeamId;
+    const decoder = new TextDecoder();
+
+    const streamTeamUpdates = async () => {
+      try {
+        const response = await fetch(`/api/teams/${teamId}/stream`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/x-ndjson' },
+        });
+        if (!response.ok || !response.body) return;
+
+        const reader = response.body.getReader();
+        let buffer = '';
+
+        while (!controller.signal.aborted) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const event = JSON.parse(line) as
+              | { type: 'team_snapshot'; team: Team }
+              | {
+                  type: 'chat_message';
+                  teamId: string;
+                  agentId: string;
+                  role: 'user' | 'agent';
+                  message: string;
+                }
+              | {
+                  type: 'agent_status';
+                  teamId: string;
+                  agentId: string;
+                  status: AgentStatusValue;
+                }
+              | { type: string };
+
+            if (event.type === 'team_snapshot') {
+              const updatedTeam = event.team;
+              setSelectedTeam(updatedTeam);
+              setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
+            }
+
+            if (event.type === 'agent_status' && event.teamId === teamId) {
+              setSelectedTeam((prev) => {
+                if (!prev || prev.id !== teamId) return prev;
+                return {
+                  ...prev,
+                  agents: prev.agents.map((agent) =>
+                    agent.id === event.agentId ? { ...agent, status: event.status } : agent
+                  ),
+                };
+              });
+              setTeams((prev) =>
+                prev.map((team) =>
+                  team.id !== teamId
+                    ? team
+                    : {
+                        ...team,
+                        agents: team.agents.map((agent) =>
+                          agent.id === event.agentId ? { ...agent, status: event.status } : agent
+                        ),
+                      }
+                )
+              );
+            }
+
+            if (event.type === 'chat_message' && event.teamId === teamId) {
+              const formattedMessage =
+                event.role === 'user' ? `Human response: ${event.message}` : event.message;
+
+              const appendMessage = (team: Team) => ({
+                ...team,
+                agents: team.agents.map((agent) => {
+                  if (agent.id !== event.agentId) return agent;
+                  const lastLog = agent.logs[agent.logs.length - 1];
+                  if (lastLog === formattedMessage) return agent;
+                  return { ...agent, logs: [...agent.logs, formattedMessage] };
+                }),
+              });
+
+              setSelectedTeam((prev) => (prev && prev.id === teamId ? appendMessage(prev) : prev));
+              setTeams((prev) =>
+                prev.map((team) => (team.id === teamId ? appendMessage(team) : team))
+              );
+            }
+          }
+        }
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Failed to stream team state:', error);
+        }
+      }
+    };
+
+    streamTeamUpdates();
+    return () => controller.abort();
+  }, [currentView, streamingTeamId, fetchTeams]);
+
   const handleApproveAgent = async (agentId: string) => {
     if (!selectedTeam) return;
 
@@ -188,7 +351,7 @@ export function App() {
 
     setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
     setSelectedTeam(updatedTeam);
-    setCurrentView('dashboard');
+    setCurrentView('team-chat');
   };
 
   return (
@@ -219,6 +382,24 @@ export function App() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
             >
               {isNewTeam ? 'Create Team' : 'Update Team'}
+            </button>
+          </div>
+        ) : currentView === 'team-chat' && selectedTeam ? (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBackToDashboard}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-medium transition-colors"
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+            <button
+              onClick={() => {
+                setCurrentView('builder');
+                setIsNewTeam(false);
+              }}
+              className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-medium transition-colors"
+            >
+              Open Builder
             </button>
           </div>
         ) : currentView === 'dashboard' ? (
@@ -255,6 +436,8 @@ export function App() {
                       key={team.id}
                       team={team}
                       onClick={handleTeamClick}
+                      onPlay={handleStartTeam}
+                      onEdit={handleEditTeam}
                       onDelete={(id) => setTeamToDelete(id)}
                     />
                   ))}
@@ -351,6 +534,14 @@ export function App() {
             agent={selectedAgent}
             onBack={() => setCurrentView('dashboard')}
             onApprove={handleApproveAgent}
+          />
+        )}
+
+        {currentView === 'team-chat' && selectedTeam && (
+          <TeamOrchestrationChat
+            team={selectedTeam}
+            onBack={handleBackToDashboard}
+            onRespond={handleTeamResponse}
           />
         )}
       </main>

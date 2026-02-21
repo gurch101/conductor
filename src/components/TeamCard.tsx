@@ -7,6 +7,7 @@ import {
   AlertCircle,
   PlayCircle,
   MoreVertical,
+  Pencil,
   Trash2,
 } from 'lucide-react';
 import { AgentStatus } from '@/constants/agentStatus';
@@ -14,10 +15,12 @@ import { AgentStatus } from '@/constants/agentStatus';
 interface TeamCardProps {
   team: Team;
   onClick: (team: Team) => void;
+  onPlay: (team: Team) => void;
+  onEdit: (team: Team) => void;
   onDelete: (id: string) => void;
 }
 
-export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) => {
+export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdit, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +92,18 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
             </button>
 
             {showMenu && (
-              <div className="absolute left-0 mt-1 w-36 bg-slate-900 border border-slate-800 rounded-lg shadow-xl z-[60] py-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute left-0 mt-1 w-40 bg-slate-900 border border-slate-800 rounded-lg shadow-xl z-[60] py-1 animate-in fade-in zoom-in-95 duration-100">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(team);
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 transition-colors"
+                >
+                  <Pencil size={14} />
+                  <span>Edit Team</span>
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -132,6 +146,17 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
             <span>${cost}</span>
           </div>
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onPlay(team);
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600/30 hover:text-blue-200 transition-colors text-[11px] font-semibold"
+          aria-label={`Start ${team.name}`}
+        >
+          <PlayCircle size={14} />
+          <span>Start</span>
+        </button>
       </div>
     </div>
   );

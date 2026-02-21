@@ -15,6 +15,12 @@ describe('Server API', () => {
     return routes[path].GET();
   };
 
+  const callGetWithParams = async (path: string, params: Record<string, string>) => {
+    return routes[path].GET(
+      Object.assign(new Request(`http://localhost${path}`, { method: 'GET' }), { params })
+    );
+  };
+
   const callPost = async (path: string, body: unknown) => {
     return routes[path].POST(
       new Request(`http://localhost${path}`, {
@@ -22,6 +28,23 @@ describe('Server API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
+    );
+  };
+
+  const callPostWithParams = async (
+    path: string,
+    params: Record<string, string>,
+    body?: unknown
+  ) => {
+    return routes[path].POST(
+      Object.assign(
+        new Request(`http://localhost${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: body !== undefined ? JSON.stringify(body) : undefined,
+        }),
+        { params }
+      )
     );
   };
 
@@ -343,5 +366,101 @@ describe('Server API', () => {
     const checkRes = await callGet('/api/personas');
     const currentPersonas = (await checkRes.json()) as Persona[];
     expect(currentPersonas.some((p) => p.id === persona.id)).toBe(true);
+  });
+
+  it('POST /api/teams/:id/start and /api/teams/:id/respond - should run and accept human responses', async () => {
+    const teamRes = await callPost('/api/teams', {
+      name: 'Run Team',
+      objective: 'Ship a release safely',
+    });
+    const team = (await teamRes.json()) as Team;
+
+    const personasRes = await callGet('/api/personas');
+    const personas = (await personasRes.json()) as Persona[];
+    const persona = personas[0]!;
+
+    await callPost('/api/agents', {
+      id: 'run-agent-1',
+      team_id: team.id,
+      persona_id: persona.id,
+      status: AgentStatus.Working,
+      summary: 'Prepare release plan',
+      tokensUsed: 0,
+      input_schema: [],
+      output_schema: [],
+    });
+
+    await callPost('/api/agents', {
+      id: 'run-agent-2',
+      team_id: team.id,
+      persona_id: persona.id,
+      status: AgentStatus.Working,
+      summary: 'Validate deployment access',
+      tokensUsed: 0,
+      input_schema: [],
+      output_schema: [],
+    });
+
+    const startRes = await callPostWithParams('/api/teams/:id/start', { id: team.id });
+    expect(startRes.status).toBe(200);
+    const startedTeam = (await startRes.json()) as Team;
+    expect(startedTeam.agents.some((a) => a.status === AgentStatus.WaitingForFeedback)).toBe(true);
+
+    const waitingAgent = startedTeam.agents.find(
+      (a) => a.status === AgentStatus.WaitingForFeedback
+    )!;
+    const respondRes = await callPostWithParams(
+      '/api/teams/:id/respond',
+      { id: team.id },
+      { agentId: waitingAgent.id, message: 'Approved. Continue execution.' }
+    );
+    expect(respondRes.status).toBe(200);
+    const respondedTeam = (await respondRes.json()) as Team;
+
+    const updatedAgent = respondedTeam.agents.find((a) => a.id === waitingAgent.id)!;
+    expect(updatedAgent.status).toBe(AgentStatus.Working);
+    expect(updatedAgent.logs.some((log) => log.includes('Human response'))).toBe(true);
+  });
+
+  it('GET /api/teams/:id/stream - should return initial NDJSON events', async () => {
+    const teamRes = await callPost('/api/teams', {
+      name: 'Stream Team',
+      objective: 'Validate streaming',
+    });
+    const team = (await teamRes.json()) as Team;
+
+    const streamRes = await callGetWithParams('/api/teams/:id/stream', { id: team.id });
+    expect(streamRes.status).toBe(200);
+    expect(streamRes.headers.get('Content-Type')).toContain('application/x-ndjson');
+    expect(streamRes.body).toBeDefined();
+
+    const reader = streamRes.body!.getReader();
+    const { value } = await reader.read();
+    const chunk = new TextDecoder().decode(value || new Uint8Array());
+    const firstLine = chunk.split('\n').find((line) => line.trim().length > 0) || '';
+    const event = JSON.parse(firstLine) as { type: string };
+    expect(event.type).toBe('stream_open');
+  });
+
+  it('DELETE /api/teams/:id - should fail if the team has an active stream', async () => {
+    const teamRes = await callPost('/api/teams', {
+      name: 'Active Stream Team',
+      objective: 'Cannot be deleted while active',
+    });
+    const team = (await teamRes.json()) as Team;
+
+    const streamRes = await callGetWithParams('/api/teams/:id/stream', { id: team.id });
+    expect(streamRes.status).toBe(200);
+    expect(streamRes.body).toBeDefined();
+
+    const reader = streamRes.body!.getReader();
+    await reader.read();
+
+    const deleteRes = await callDelete('/api/teams/:id', { id: team.id });
+    expect(deleteRes.status).toBe(400);
+    const errorData = (await deleteRes.json()) as { error: string };
+    expect(errorData.error).toContain('currently active');
+
+    await reader.cancel();
   });
 });

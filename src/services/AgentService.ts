@@ -39,4 +39,13 @@ export class AgentService {
   static updateAgentPosition(id: string, posX: number, posY: number): void {
     AgentRepository.updatePosition(id, posX, posY);
   }
+
+  /**
+   * Resolves the team ID for a given agent.
+   * @param id The agent ID.
+   * @returns The owning team ID or null if not found.
+   */
+  static getAgentTeamId(id: string): string | null {
+    return AgentRepository.findById(id)?.teamId || null;
+  }
 }

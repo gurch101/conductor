@@ -3,6 +3,7 @@ import { AgentRepository } from '@/repositories/AgentRepository';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
 import { PersonaRepository } from '@/repositories/PersonaRepository';
 import { AgentStatus } from '@/constants/agentStatus';
+import { TeamStreamService } from '@/services/TeamStreamService';
 import type { Team, Agent, DBTeam } from '@/types';
 
 /**
@@ -152,6 +153,9 @@ export class TeamService {
    * @param id The ID of the team to delete.
    */
   static deleteTeam(id: string): void {
+    if (TeamStreamService.hasActiveSubscribers(id)) {
+      throw new Error('Cannot delete a team that is currently active.');
+    }
     TeamRepository.delete(id);
   }
 
@@ -307,6 +311,89 @@ export class TeamService {
     }[]
   ): void {
     ConnectionRepository.replaceForTeam(teamId, connections);
+  }
+
+  /**
+   * Starts orchestration for a team and seeds initial runtime state.
+   * @param id The ID of the team.
+   * @returns The updated hydrated team.
+   * @throws Error if the team does not exist or has no agents.
+   */
+  static startTeam(id: string): Team {
+    const team = TeamRepository.findById(id);
+    if (!team) {
+      throw new Error('Team not found.');
+    }
+
+    const agents = AgentRepository.findByTeamId(id);
+    if (agents.length === 0) {
+      throw new Error('Cannot start a team with no agents.');
+    }
+
+    const activeAgents = agents.filter(
+      (agent) =>
+        agent.personaId !== 'persona-start' &&
+        agent.personaId !== 'persona-end' &&
+        agent.personaId !== 'persona-gateway'
+    );
+    if (activeAgents.length === 0) {
+      throw new Error('Cannot start a team with only system agents.');
+    }
+
+    for (const agent of activeAgents) {
+      if (agent.status !== AgentStatus.Done) {
+        AgentRepository.updateStatus(agent.id, AgentStatus.Working);
+      }
+    }
+
+    const leadAgent =
+      activeAgents.find((agent) => agent.status !== AgentStatus.Done) || activeAgents[0]!;
+    AgentRepository.addLog(leadAgent.id, 'Orchestrator started team execution.');
+    if (team.objective) {
+      AgentRepository.addLog(leadAgent.id, `Working on objective: ${team.objective}`);
+    }
+
+    const reviewerAgent = activeAgents.find(
+      (agent) => agent.id !== leadAgent.id && agent.status !== AgentStatus.Done
+    );
+    const approvalAgent = reviewerAgent || leadAgent;
+    AgentRepository.updateStatus(approvalAgent.id, AgentStatus.WaitingForFeedback);
+    AgentRepository.addLog(
+      approvalAgent.id,
+      'Needs clarification and access approval before continuing execution.'
+    );
+
+    return this.hydrateTeam(team);
+  }
+
+  /**
+   * Posts a human response to an agent during orchestration.
+   * @param teamId The team ID.
+   * @param agentId The target agent ID.
+   * @param message The user's response.
+   * @returns The updated hydrated team.
+   * @throws Error if team, agent, or message is invalid.
+   */
+  static respondToAgent(teamId: string, agentId: string, message: string): Team {
+    const team = TeamRepository.findById(teamId);
+    if (!team) {
+      throw new Error('Team not found.');
+    }
+
+    if (!message || message.trim() === '') {
+      throw new Error('Response message is required.');
+    }
+
+    const agent = AgentRepository.findById(agentId);
+    if (!agent || agent.teamId !== teamId) {
+      throw new Error('Agent not found for this team.');
+    }
+
+    AgentRepository.addLog(agentId, `Human response: ${message.trim()}`);
+    AgentRepository.updateStatus(agentId, AgentStatus.Working);
+    AgentRepository.addLog(agentId, 'Human response received. Continuing execution.');
+
+    return this.hydrateTeam(team);
   }
 
   /**

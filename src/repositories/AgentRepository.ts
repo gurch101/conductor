@@ -1,5 +1,6 @@
 import db, { agents, logs } from '@/db';
 import type { DBAgent, Agent } from '@/types';
+import type { AgentStatusValue } from '@/constants/agentStatus';
 import { eq, asc } from 'drizzle-orm';
 
 /**
@@ -22,6 +23,16 @@ export class AgentRepository {
    */
   static findByPersonaId(personaId: string): DBAgent[] {
     return db.select().from(agents).where(eq(agents.personaId, personaId)).all();
+  }
+
+  /**
+   * Finds a single agent by its ID.
+   * @param id The ID of the agent.
+   * @returns The database agent or null if not found.
+   */
+  static findById(id: string): DBAgent | null {
+    const result = db.select().from(agents).where(eq(agents.id, id)).get();
+    return result || null;
   }
 
   /**
@@ -96,5 +107,23 @@ export class AgentRepository {
       })
       .where(eq(agents.id, agent.id))
       .run();
+  }
+
+  /**
+   * Updates an agent's execution status.
+   * @param id The ID of the agent.
+   * @param status The new status.
+   */
+  static updateStatus(id: string, status: AgentStatusValue): void {
+    db.update(agents).set({ status }).where(eq(agents.id, id)).run();
+  }
+
+  /**
+   * Appends a log message for an agent.
+   * @param agentId The ID of the agent.
+   * @param content The log message.
+   */
+  static addLog(agentId: string, content: string): void {
+    db.insert(logs).values({ agentId, content }).run();
   }
 }
