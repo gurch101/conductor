@@ -25,7 +25,7 @@ export const appOptions = {
     },
 
     '/api/teams/:id': {
-      GET: (req: any) => {
+      GET: (req) => {
         const team = TeamService.getTeamById(req.params.id);
         if (!team) return new Response('Not Found', { status: 404 });
         return Response.json(team);
