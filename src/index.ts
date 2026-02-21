@@ -5,51 +5,47 @@ import { PersonaService } from './services/PersonaService';
 import { AgentService } from './services/AgentService';
 import { ConnectionService } from './services/ConnectionService';
 import type { Agent } from './types';
+import index from './index.html';
 
 // Initialize the database on startup (only if not testing)
 if (process.env.NODE_ENV !== 'test') {
   initDb();
 }
 
-export const server = serve({
-  async fetch(req) {
-    const url = new URL(req.url);
-
+export const appOptions = {
+  routes: {
     // API Routes
-    if (url.pathname.startsWith('/api/')) {
-      // Teams API
-      if (url.pathname === '/api/teams') {
-        if (req.method === 'GET') {
-          return Response.json(TeamService.getAllTeams());
-        }
-        if (req.method === 'POST') {
-          const { name, objective } = (await req.json()) as { name: string; objective: string };
-          const team = TeamService.createTeam(name, objective);
-          return Response.json(team);
-        }
-      }
+    '/api/teams': {
+      GET: () => Response.json(TeamService.getAllTeams()),
+      POST: async (req: Request) => {
+        const { name, objective } = (await req.json()) as { name: string; objective: string };
+        const team = TeamService.createTeam(name, objective);
+        return Response.json(team);
+      },
+    },
 
-      const teamIdMatch = url.pathname.match(/^\/api\/teams\/([^/]+)$/);
-      if (teamIdMatch && req.method === 'GET') {
-        const team = TeamService.getTeamById(teamIdMatch[1]!);
+    '/api/teams/:id': {
+      GET: (req) => {
+        const team = TeamService.getTeamById(req.params.id);
         if (!team) return new Response('Not Found', { status: 404 });
         return Response.json(team);
-      }
+      },
+    },
 
-      // Personas API
-      if (url.pathname === '/api/personas' && req.method === 'GET') {
-        return Response.json(PersonaService.getAllPersonas());
-      }
+    '/api/personas': {
+      GET: () => Response.json(PersonaService.getAllPersonas()),
+    },
 
-      // Agents API
-      if (url.pathname === '/api/agents' && req.method === 'POST') {
+    '/api/agents': {
+      POST: async (req: Request) => {
         const agent = (await req.json()) as Agent;
         AgentService.createAgent(agent);
         return Response.json({ success: true });
-      }
+      },
+    },
 
-      // Connections API
-      if (url.pathname === '/api/connections' && req.method === 'POST') {
+    '/api/connections': {
+      POST: async (req: Request) => {
         const conn = (await req.json()) as {
           team_id: string;
           source_id: string;
@@ -59,16 +55,25 @@ export const server = serve({
         };
         ConnectionService.createConnection(conn);
         return Response.json({ success: true });
-      }
+      },
+    },
 
-      return new Response('Not Found', { status: 404 });
-    }
+    // Catch-all for unknown API routes to return 404 instead of index.html
+    '/api/*': () => new Response('Not Found', { status: 404 }),
 
     // Default: return the index page for SPA
-    return new Response(Bun.file(import.meta.dir + '/index.html'));
+    // Bun 1.2+ 'HTMLBundle' automatically handles scripts/assets in index.html
+    '/*': index,
   },
-});
 
-if (process.env.NODE_ENV !== 'test') {
+  development: process.env.NODE_ENV !== 'production' && {
+    hmr: true,
+    console: true,
+  },
+};
+
+export const server = process.env.NODE_ENV !== 'test' ? serve(appOptions) : null;
+
+if (process.env.NODE_ENV !== 'test' && server) {
   console.log(`🚀 Server running at ${server.url}`);
 }
