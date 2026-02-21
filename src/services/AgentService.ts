@@ -1,7 +1,14 @@
 import { AgentRepository } from '@/repositories/AgentRepository';
 import { Agent } from '@/types';
 
+/**
+ * Service for managing agents.
+ */
 export class AgentService {
+  /**
+   * Creates a new agent, generating a UUID if not provided.
+   * @param agent The agent object to create.
+   */
   static createAgent(agent: Agent): void {
     const id = agent.id || crypto.randomUUID();
     AgentRepository.create({
