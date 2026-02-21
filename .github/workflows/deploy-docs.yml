@@ -23,33 +23,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: website/package-lock.json
-
-      - name: Install Bun
+      - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Install root dependencies
+      - name: Install dependencies
         run: bun install
 
       - name: Generate Changelog
         run: bun run changelog
 
-      - name: Install website dependencies
-        run: |
-          cd website
-          npm install
-
       - name: Build website
         run: |
           cd website
-          npm run build
+          bun install
+          bun run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
