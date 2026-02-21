@@ -163,4 +163,26 @@ describe('Server API', () => {
     expect(updatedTeam.name).toBe(updatedDetails.name);
     expect(updatedTeam.objective).toBe(updatedDetails.objective);
   });
+
+  it('DELETE /api/teams/:id - should delete the team', async () => {
+    // 1. Get the team
+    const teamsRes = await fetch(`${baseUrl}/api/teams`);
+    const teams = (await teamsRes.json()) as Team[];
+    const team = teams.find((t) => t.name === 'Updated Test Team')!;
+
+    // 2. Delete it
+    const deleteRes = await fetch(`${baseUrl}/api/teams/${team.id}`, {
+      method: 'DELETE',
+    });
+    expect(deleteRes.status).toBe(200);
+    expect((await deleteRes.json()).success).toBe(true);
+
+    // 3. Verify it is gone
+    const getRes = await fetch(`${baseUrl}/api/teams/${team.id}`);
+    expect(getRes.status).toBe(404);
+
+    const allTeamsRes = await fetch(`${baseUrl}/api/teams`);
+    const allTeams = (await allTeamsRes.json()) as Team[];
+    expect(allTeams.some((t) => t.id === team.id)).toBe(false);
+  });
 });
