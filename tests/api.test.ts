@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { serve, type Server } from 'bun';
 import { appOptions } from '@/index';
-import { initDb } from '@/db/schema';
+import { initDb } from '@/db';
 import type { Team, Persona } from '@/types';
 
 describe('Server API', () => {

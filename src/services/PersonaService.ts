@@ -12,10 +12,12 @@ export class PersonaService {
   static getAllPersonas(): Persona[] {
     const personas = PersonaRepository.findAll();
     return personas.map((p) => ({
-      ...p,
-      systemPrompt: p.system_prompt,
-      input_schema: JSON.parse(p.input_schema || '[]'),
-      output_schema: JSON.parse(p.output_schema || '[]'),
+      id: p.id,
+      name: p.name,
+      avatar: p.avatar || '',
+      systemPrompt: p.systemPrompt,
+      input_schema: JSON.parse(p.inputSchema || '[]'),
+      output_schema: JSON.parse(p.outputSchema || '[]'),
     }));
   }
 }

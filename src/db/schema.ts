@@ -1,109 +1,57 @@
-import { Database } from 'bun:sqlite';
+import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
 
-const dbPath =
-  process.env.DATABASE_PATH || (process.env.NODE_ENV === 'test' ? ':memory:' : 'conductor.sqlite');
-const db = new Database(dbPath, { create: true });
+export const teams = sqliteTable('teams', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  objective: text('objective'),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
 
-export function initDb() {
-  db.run('PRAGMA foreign_keys = ON;');
-  db.run(`
-    CREATE TABLE IF NOT EXISTS teams (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      objective TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+export const personas = sqliteTable('personas', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  avatar: text('avatar'),
+  systemPrompt: text('system_prompt').notNull(),
+  inputSchema: text('input_schema').default('[]'),
+  outputSchema: text('output_schema').default('[]'),
+});
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS personas (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      avatar TEXT,
-      system_prompt TEXT NOT NULL,
-      input_schema TEXT DEFAULT '[]',
-      output_schema TEXT DEFAULT '[]'
-    );
-  `);
+export const agents = sqliteTable('agents', {
+  id: text('id').primaryKey(),
+  teamId: text('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(),
+  status: text('status', { enum: ['done', 'working', 'waiting_approval'] }).default('working'),
+  summary: text('summary'),
+  tokensUsed: integer('tokens_used').default(0),
+  inputSchema: text('input_schema'),
+  outputSchema: text('output_schema'),
+  posX: real('pos_x').default(0),
+  posY: real('pos_y').default(0),
+});
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS agents (
-      id TEXT PRIMARY KEY,
-      team_id TEXT NOT NULL,
-      role TEXT NOT NULL,
-      status TEXT CHECK(status IN ('done', 'working', 'waiting_approval')) DEFAULT 'working',
-      summary TEXT,
-      tokens_used INTEGER DEFAULT 0,
-      input_schema TEXT,
-      output_schema TEXT,
-      pos_x REAL DEFAULT 0,
-      pos_y REAL DEFAULT 0,
-      FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
-    );
-  `);
+export const connections = sqliteTable('connections', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  teamId: text('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  sourceId: text('source_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+  sourceHandle: text('source_handle'),
+  targetId: text('target_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+  targetHandle: text('target_handle'),
+});
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS connections (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      team_id TEXT NOT NULL,
-      source_id TEXT NOT NULL,
-      source_handle TEXT,
-      target_id TEXT NOT NULL,
-      target_handle TEXT,
-      FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
-      FOREIGN KEY (source_id) REFERENCES agents(id) ON DELETE CASCADE,
-      FOREIGN KEY (target_id) REFERENCES agents(id) ON DELETE CASCADE
-    );
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      agent_id TEXT NOT NULL,
-      content TEXT NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
-    );
-  `);
-
-  // Seed Personas if empty
-  const personaCount = db.prepare('SELECT COUNT(*) as count FROM personas').get() as {
-    count: number;
-  };
-  if (personaCount.count === 0) {
-    const seedPersonas = [
-      {
-        id: 'p1',
-        name: 'Researcher',
-        avatar: '🔍',
-        system_prompt: 'You are an expert researcher...',
-        input_schema: JSON.stringify([{ name: 'topic', type: 'text' }]),
-        output_schema: JSON.stringify([{ name: 'findings', type: 'markdown' }]),
-      },
-      {
-        id: 'p2',
-        name: 'Coder',
-        avatar: '💻',
-        system_prompt: 'You are an expert software engineer...',
-        input_schema: JSON.stringify([{ name: 'spec', type: 'markdown' }]),
-        output_schema: JSON.stringify([{ name: 'code', type: 'text' }]),
-      },
-    ];
-
-    const insert = db.prepare(
-      'INSERT INTO personas (id, name, avatar, system_prompt, input_schema, output_schema) VALUES ($id, $name, $avatar, $system_prompt, $input_schema, $output_schema)'
-    );
-    for (const p of seedPersonas) {
-      insert.run({
-        $id: p.id,
-        $name: p.name,
-        $avatar: p.avatar,
-        $system_prompt: p.system_prompt,
-        $input_schema: p.input_schema,
-        $output_schema: p.output_schema,
-      });
-    }
-  }
-}
-
-export default db;
+export const logs = sqliteTable('logs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  agentId: text('agent_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  timestamp: text('timestamp').default(sql`CURRENT_TIMESTAMP`),
+});

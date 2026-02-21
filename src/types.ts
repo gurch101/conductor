@@ -1,39 +1,39 @@
 export interface DBAgent {
   id: string;
-  team_id: string;
+  teamId: string;
   role: string;
   status: 'done' | 'working' | 'waiting_approval';
-  summary: string;
-  tokens_used: number;
-  input_schema: string;
-  output_schema: string;
-  pos_x: number;
-  pos_y: number;
+  summary: string | null;
+  tokensUsed: number | null;
+  inputSchema: string | null;
+  outputSchema: string | null;
+  posX: number | null;
+  posY: number | null;
 }
 
 export interface DBTeam {
   id: string;
   name: string;
-  objective: string;
-  created_at: string;
+  objective: string | null;
+  createdAt: string | null;
 }
 
 export interface DBConnection {
   id: number;
-  team_id: string;
-  source_id: string;
-  source_handle: string | null;
-  target_id: string;
-  target_handle: string | null;
+  teamId: string;
+  sourceId: string;
+  sourceHandle: string | null;
+  targetId: string;
+  targetHandle: string | null;
 }
 
 export interface DBPersona {
   id: string;
   name: string;
-  avatar: string;
-  system_prompt: string;
-  input_schema: string;
-  output_schema: string;
+  avatar: string | null;
+  systemPrompt: string;
+  inputSchema: string | null;
+  outputSchema: string | null;
 }
 
 export interface Agent {

@@ -1,5 +1,5 @@
 import { serve } from 'bun';
-import { initDb } from './db/schema';
+import { initDb } from './db';
 import { TeamService } from './services/TeamService';
 import { PersonaService } from './services/PersonaService';
 import { AgentService } from './services/AgentService';

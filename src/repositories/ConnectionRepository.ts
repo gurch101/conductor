@@ -1,5 +1,6 @@
-import db from '@/db/schema';
+import db, { connections } from '@/db';
 import type { DBConnection } from '@/types';
+import { eq } from 'drizzle-orm';
 
 /**
  * Repository for managing agent connections in the database.
@@ -11,7 +12,7 @@ export class ConnectionRepository {
    * @returns A list of database connections.
    */
   static findByTeamId(teamId: string): DBConnection[] {
-    return db.prepare('SELECT * FROM connections WHERE team_id = ?').all(teamId) as DBConnection[];
+    return db.select().from(connections).where(eq(connections.teamId, teamId)).all();
   }
 
   /**
@@ -30,11 +31,14 @@ export class ConnectionRepository {
     target_id: string;
     target_handle: string | null;
   }): void {
-    db.prepare(
-      `
-       INSERT INTO connections (team_id, source_id, source_handle, target_id, target_handle)
-       VALUES (?, ?, ?, ?, ?)
-     `
-    ).run(data.team_id, data.source_id, data.source_handle, data.target_id, data.target_handle);
+    db.insert(connections)
+      .values({
+        teamId: data.team_id,
+        sourceId: data.source_id,
+        sourceHandle: data.source_handle,
+        targetId: data.target_id,
+        targetHandle: data.target_handle,
+      })
+      .run();
   }
 }
