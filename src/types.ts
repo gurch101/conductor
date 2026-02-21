@@ -1,7 +1,7 @@
 export interface DBAgent {
   id: string;
   teamId: string;
-  role: string;
+  personaId: string | null;
   status: 'done' | 'working' | 'waiting_approval';
   summary: string | null;
   tokensUsed: number | null;
@@ -31,15 +31,16 @@ export interface DBPersona {
   id: string;
   name: string;
   avatar: string | null;
-  systemPrompt: string;
-  inputSchema: string | null;
-  outputSchema: string | null;
+  description: string | null;
+  skill: string;
 }
 
 export interface Agent {
   id: string;
   team_id: string;
-  role: string;
+  persona_id?: string;
+  persona_name?: string;
+  description: string;
   status: 'done' | 'working' | 'waiting_approval';
   summary: string;
   tokensUsed: number;
@@ -67,7 +68,6 @@ export type Persona = {
   id: string;
   name: string;
   avatar: string;
-  systemPrompt: string;
-  input_schema: { name: string; type: string }[];
-  output_schema: { name: string; type: string }[];
+  description: string;
+  skill: string;
 };

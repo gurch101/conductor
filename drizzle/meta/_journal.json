@@ -8,6 +8,27 @@
       "when": 1771707330263,
       "tag": "0000_little_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1771712409460,
+      "tag": "0001_good_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771714296184,
+      "tag": "0002_lush_golden_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771715073775,
+      "tag": "0003_personas-skill-field",
+      "breakpoints": true
     }
   ]
 }

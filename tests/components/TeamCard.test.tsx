@@ -52,7 +52,7 @@ describe('TeamCard Component', () => {
         {
           id: 'a1',
           team_id: '1',
-          role: 'A1',
+          description: 'A1',
           status: 'done',
           summary: 'done',
           tokensUsed: 0,
@@ -73,7 +73,7 @@ describe('TeamCard Component', () => {
         {
           id: 'a1',
           team_id: '1',
-          role: 'A1',
+          description: 'A1',
           status: 'done',
           summary: 'done',
           tokensUsed: 0,
@@ -84,7 +84,7 @@ describe('TeamCard Component', () => {
         {
           id: 'a2',
           team_id: '1',
-          role: 'A2',
+          description: 'A2',
           status: 'waiting_approval',
           summary: 'wait',
           tokensUsed: 0,

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Financial SaaS Discovery Spec"
+  short_description: "Discovery-to-spec workflow for regulated operations products"
+  default_prompt: "Use $product-owner-discovery-spec to run discovery for a financial SaaS feature and produce an implementation-ready spec for operations teams and introducing broker users (advisors, branch managers, assistants) after clarifications, then save the final spec Markdown file to repo-root/specs."

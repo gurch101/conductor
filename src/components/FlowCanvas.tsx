@@ -7,6 +7,7 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   MarkerType,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { AgentNode } from './AgentNode';
@@ -23,6 +24,7 @@ interface FlowCanvasProps {
 
 export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdate }) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { screenToFlowPosition } = useReactFlow();
 
   // Convert agents to nodes
   const initialNodes: Node[] = (team.agents || []).map((agent) => ({
@@ -49,9 +51,44 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const onNodesDelete = useCallback(
+    async (deleted: Node[]) => {
+      try {
+        const idsToDelete = deleted.map((n) => n.id);
+
+        // Delete from backend
+        await Promise.all(
+          idsToDelete.map((id) => fetch(`/api/agents/${id}`, { method: 'DELETE' }))
+        );
+
+        // Sync with parent state
+        const updatedAgents = team.agents.filter((a) => !idsToDelete.includes(a.id));
+        const updatedConnections = team.connections.filter(
+          (c) => !idsToDelete.includes(c.source) && !idsToDelete.includes(c.target)
+        );
+
+        onUpdate({
+          ...team,
+          agents: updatedAgents,
+          connections: updatedConnections,
+        });
+      } catch (error) {
+        console.error('Failed to delete agents:', error);
+      }
+    },
+    [onUpdate, team]
+  );
+
   const syncChanges = useCallback(
     async (newNodes: Node[], newEdges: Edge[]) => {
-      const updatedAgents = newNodes.map((n) => n.data as Agent);
+      const updatedAgents = newNodes.map((n) => {
+        const agent = n.data as Agent;
+        return {
+          ...agent,
+          pos_x: n.position.x,
+          pos_y: n.position.y,
+        };
+      });
       const updatedConnections = newEdges.map((e) => ({
         source: e.source!,
         source_handle: e.sourceHandle || undefined,
@@ -66,6 +103,67 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
       });
     },
     [onUpdate, team]
+  );
+
+  const onNodeDragStop = useCallback(
+    async (_event: React.MouseEvent, node: Node) => {
+      const nextNodes = nodes.map((n) =>
+        n.id === node.id
+          ? {
+              ...n,
+              position: node.position,
+              data: {
+                ...(n.data as Agent),
+                pos_x: node.position.x,
+                pos_y: node.position.y,
+              },
+            }
+          : n
+      );
+
+      setNodes(nextNodes);
+      syncChanges(nextNodes, edges);
+
+      try {
+        await fetch(`/api/agents/${node.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pos_x: node.position.x, pos_y: node.position.y }),
+        });
+      } catch (error) {
+        console.error('Failed to persist agent position:', error);
+      }
+    },
+    [nodes, edges, setNodes, syncChanges]
+  );
+
+  const onEdgesDelete = useCallback(
+    async (deleted: Edge[]) => {
+      try {
+        await Promise.all(
+          deleted.map((edge) =>
+            fetch('/api/connections', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                team_id: team.id,
+                source_id: edge.source,
+                source_handle: edge.sourceHandle || null,
+                target_id: edge.target,
+                target_handle: edge.targetHandle || null,
+              }),
+            })
+          )
+        );
+
+        const deletedIds = new Set(deleted.map((edge) => edge.id));
+        const remainingEdges = edges.filter((edge) => !deletedIds.has(edge.id));
+        syncChanges(nodes, remainingEdges);
+      } catch (error) {
+        console.error('Failed to delete connections:', error);
+      }
+    },
+    [team.id, edges, nodes, syncChanges]
   );
 
   const onConnect = useCallback(
@@ -113,11 +211,10 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
 
       if (!personaId) return;
 
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-      const position = {
-        x: event.clientX - (reactFlowBounds?.left || 0),
-        y: event.clientY - (reactFlowBounds?.top || 0),
-      };
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
 
       try {
         const pResp = await fetch('/api/personas');
@@ -129,12 +226,14 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
         const newAgent: Agent = {
           id: `agent-${Date.now()}`,
           team_id: team.id,
-          role: persona.name,
+          persona_id: persona.id,
+          persona_name: persona.name,
+          description: persona.description || persona.name,
           status: 'working',
           summary: `Newly created ${persona.name} agent.`,
           tokensUsed: 0,
-          input_schema: persona.input_schema,
-          output_schema: persona.output_schema,
+          input_schema: [],
+          output_schema: [],
           logs: [`Agent ${persona.name} initialized.`],
           pos_x: position.x,
           pos_y: position.y,
@@ -163,7 +262,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
         console.error('Failed to drop agent:', error);
       }
     },
-    [setNodes, edges, syncChanges, team.id]
+    [setNodes, edges, syncChanges, team.id, screenToFlowPosition]
   );
 
   return (
@@ -171,8 +270,12 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        deleteKeyCode={['Backspace', 'Delete']}
         onNodesChange={onNodesChange}
+        onNodeDragStop={onNodeDragStop}
         onEdgesChange={onEdgesChange}
+        onNodesDelete={onNodesDelete}
+        onEdgesDelete={onEdgesDelete}
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}

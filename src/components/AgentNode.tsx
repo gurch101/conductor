@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useReactFlow } from 'reactflow';
 import type { Agent } from '../types';
-import { Coins, Terminal, Pause, Play, ChevronDown, ChevronUp } from 'lucide-react';
+import { Coins, Terminal, Pause, Play, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 interface AgentNodeProps {
   data: Agent;
@@ -9,6 +9,7 @@ interface AgentNodeProps {
 
 export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
   const [showLogs, setShowLogs] = useState(false);
+  const { deleteElements } = useReactFlow();
   const cost = ((data.tokensUsed / 1000) * 0.02).toFixed(3);
 
   const statusColors = {
@@ -18,23 +19,38 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg shadow-2xl w-[220px] text-slate-200 overflow-hidden">
+    <div className="bg-slate-900 border border-slate-800 rounded-lg shadow-2xl w-[220px] text-slate-200 overflow-hidden group/node">
       <Handle
         type="target"
         position={Position.Top}
         className="w-2 h-2 bg-slate-700 border-2 border-slate-900"
       />
+      <Handle
+        type="target"
+        id="left-target"
+        position={Position.Left}
+        className="w-2 h-2 bg-slate-700 border-2 border-slate-900"
+      />
 
       {/* Header */}
-      <div className="p-2 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+      <div className="p-2 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center relative">
         <div className="flex items-center gap-1.5 min-w-0">
           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusColors[data.status]}`} />
           <span className="font-bold text-[10px] tracking-tight uppercase truncate">
-            {data.role}
+            {data.persona_name || data.description}
           </span>
         </div>
-        <div className="flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-[9px] text-slate-400 shrink-0">
-          <Coins size={8} className="text-yellow-500" />${cost}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-[9px] text-slate-400 shrink-0">
+            <Coins size={8} className="text-yellow-500" />${cost}
+          </div>
+          <button
+            onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
+            className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+            title="Delete Agent"
+          >
+            <Trash2 size={10} />
+          </button>
         </div>
       </div>
 
@@ -82,6 +98,12 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        className="w-2 h-2 bg-slate-700 border-2 border-slate-900"
+      />
+      <Handle
+        type="source"
+        id="right-source"
+        position={Position.Right}
         className="w-2 h-2 bg-slate-700 border-2 border-slate-900"
       />
     </div>

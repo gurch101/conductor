@@ -9,7 +9,7 @@ export const MOCK_TEAMS: Team[] = [
       {
         id: 'agent-1',
         team_id: '1',
-        role: 'Researcher',
+        description: 'Researcher',
         status: 'done',
         summary: 'Gathered key facts about Quantum Bits and Superposition.',
         tokensUsed: 1200,
@@ -24,7 +24,7 @@ export const MOCK_TEAMS: Team[] = [
       {
         id: 'agent-2',
         team_id: '1',
-        role: 'Writer',
+        description: 'Writer',
         status: 'working',
         summary: 'Drafting the introduction and main sections.',
         tokensUsed: 800,
@@ -43,7 +43,7 @@ export const MOCK_TEAMS: Team[] = [
       {
         id: 'agent-3',
         team_id: '2',
-        role: 'Linter',
+        description: 'Linter',
         status: 'done',
         summary: 'Checked for syntax errors and style violations.',
         tokensUsed: 400,
@@ -54,7 +54,7 @@ export const MOCK_TEAMS: Team[] = [
       {
         id: 'agent-4',
         team_id: '2',
-        role: 'Security Auditor',
+        description: 'Security Auditor',
         status: 'waiting_approval',
         summary: 'Flagged a potential ReDoS in the email regex.',
         tokensUsed: 650,
@@ -73,7 +73,7 @@ export const MOCK_TEAMS: Team[] = [
       {
         id: 'agent-5',
         team_id: '3',
-        role: 'DevOps',
+        description: 'DevOps',
         status: 'done',
         summary: 'Prepared the staging environment.',
         tokensUsed: 300,
@@ -87,7 +87,40 @@ export const MOCK_TEAMS: Team[] = [
 ];
 
 export const PREDEFINED_PERSONAS = [
-  { name: 'Researcher', avatar: '🔍', systemPrompt: 'You are an expert researcher...' },
-  { name: 'Coder', avatar: '💻', systemPrompt: 'You are an expert software engineer...' },
-  { name: 'Reviewer', avatar: '🧐', systemPrompt: 'You are an expert code reviewer...' },
+  {
+    name: 'Product Manager',
+    avatar: '📌',
+    description: 'Leads discovery and produces PRD.',
+    skill: 'product-owner-discovery-spec',
+  },
+  {
+    name: 'Business Analyst (BA)',
+    avatar: '📊',
+    description: 'Translates high-level requirements in the PRD to detailed requirements.',
+    skill: 'product-owner-discovery-spec',
+  },
+  {
+    name: 'Solutions Architect',
+    avatar: '🏗️',
+    description: 'Defines how software will be structured to meet requirements.',
+    skill: 'solutions-architect',
+  },
+  {
+    name: 'Developer',
+    avatar: '💻',
+    description: 'Takes requirements and implements features.',
+    skill: 'coding-implementation',
+  },
+  {
+    name: 'QA Tester',
+    avatar: '🧪',
+    description: 'Validates quality and expected behavior through testing.',
+    skill: 'qa-testing',
+  },
+  {
+    name: 'DevOps Engineer',
+    avatar: '⚙️',
+    description: 'Builds and operates deployment and runtime workflows.',
+    skill: 'devops-engineering',
+  },
 ];

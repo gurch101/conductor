@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { ReactFlowProvider } from 'reactflow';
 import type { Team, Agent } from './types';
 import { TeamCard } from './components/TeamCard';
 import { FlowCanvas } from './components/FlowCanvas';
 import { PersonaSidebar } from './components/PersonaSidebar';
-import { SkillEditor } from './components/SkillEditor';
 import { AgentChat } from './components/AgentChat';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { Plus, ArrowLeft } from 'lucide-react';
 import './index.css';
 
-type View = 'dashboard' | 'builder' | 'create-skill' | 'agent-chat';
+type View = 'dashboard' | 'builder' | 'agent-chat';
 
 export function App() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -263,36 +264,23 @@ export function App() {
         )}
 
         {/* Delete Confirmation Modal */}
-        {teamToDelete && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
-              <h3 className="text-xl font-bold text-white mb-2">Delete Team?</h3>
-              <p className="text-slate-400 mb-6 text-sm">
-                This will permanently remove{' '}
-                <strong>{teams.find((t) => t.id === teamToDelete)?.name}</strong> and all its
-                agents, connections, and logs. This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setTeamToDelete(null)}
-                  className="flex-1 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteTeam}
-                  className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors shadow-lg shadow-red-500/20"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmationModal
+          isOpen={!!teamToDelete}
+          title="Delete Team?"
+          message={
+            <>
+              This will permanently remove{' '}
+              <strong>{teams.find((t) => t.id === teamToDelete)?.name}</strong> and all its agents,
+              connections, and logs. This action cannot be undone.
+            </>
+          }
+          onConfirm={handleDeleteTeam}
+          onCancel={() => setTeamToDelete(null)}
+        />
 
         {currentView === 'builder' && selectedTeam && (
           <div className="flex-1 flex w-full h-full relative overflow-hidden">
-            <PersonaSidebar onCreateClick={() => setCurrentView('create-skill')} />
+            <PersonaSidebar />
             <div className="flex-1 flex flex-col h-full bg-slate-950 relative min-w-0">
               {error && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] bg-red-500/90 backdrop-blur text-white px-4 py-2 rounded-lg shadow-lg border border-red-400 flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
@@ -337,13 +325,13 @@ export function App() {
                 </div>
               </div>
               <div className="flex-1 relative w-full h-full">
-                <FlowCanvas team={selectedTeam} onUpdate={onUpdateTeam} />
+                <ReactFlowProvider>
+                  <FlowCanvas team={selectedTeam} onUpdate={onUpdateTeam} />
+                </ReactFlowProvider>
               </div>
             </div>
           </div>
         )}
-
-        {currentView === 'create-skill' && <SkillEditor onBack={() => setCurrentView('builder')} />}
 
         {currentView === 'agent-chat' && selectedTeam && selectedAgent && (
           <AgentChat

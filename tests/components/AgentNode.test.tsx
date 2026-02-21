@@ -8,13 +8,15 @@ import type { Agent } from '@/types';
 mock.module('reactflow', () => ({
   Handle: () => <div data-testid="handle" />,
   Position: { Top: 'top', Bottom: 'bottom' },
+  useReactFlow: () => ({ deleteElements: () => {} }),
 }));
 
 describe('AgentNode Component', () => {
   const mockAgent: Agent = {
     id: 'a1',
     team_id: 't1',
-    role: 'Researcher',
+    persona_name: 'Researcher',
+    description: 'Researcher',
     status: 'working',
     summary: 'Researching tech',
     tokensUsed: 1500,
@@ -23,7 +25,7 @@ describe('AgentNode Component', () => {
     logs: ['Log 1'],
   };
 
-  it('renders role and summary', () => {
+  it('renders description and summary', () => {
     render(<AgentNode data={mockAgent} />);
     // Use regex to be case-insensitive
     expect(screen.getByText(/Researcher/i)).toBeDefined();

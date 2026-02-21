@@ -20,4 +20,22 @@ export class AgentService {
       output_schema: agent.output_schema || [],
     });
   }
+
+  /**
+   * Deletes an agent by ID.
+   * @param id The ID of the agent to delete.
+   */
+  static deleteAgent(id: string): void {
+    AgentRepository.delete(id);
+  }
+
+  /**
+   * Updates an agent's canvas position.
+   * @param id The ID of the agent.
+   * @param posX The X position on the canvas.
+   * @param posY The Y position on the canvas.
+   */
+  static updateAgentPosition(id: string, posX: number, posY: number): void {
+    AgentRepository.updatePosition(id, posX, posY);
+  }
 }
