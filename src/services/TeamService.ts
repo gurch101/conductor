@@ -51,21 +51,33 @@ export class TeamService {
     const agentsWithLogs: Agent[] = agents.map((agent) => {
       const logs = AgentRepository.findLogsByAgentId(agent.id);
       return {
-        ...agent,
-        tokensUsed: agent.tokens_used,
-        input_schema: JSON.parse(agent.input_schema || '[]'),
-        output_schema: JSON.parse(agent.output_schema || '[]'),
+        id: agent.id,
+        team_id: agent.teamId,
+        role: agent.role,
+        status: agent.status,
+        summary: agent.summary || '',
+        tokensUsed: agent.tokensUsed || 0,
+        input_schema: JSON.parse(agent.inputSchema || '[]'),
+        output_schema: JSON.parse(agent.outputSchema || '[]'),
+        pos_x: agent.posX || 0,
+        pos_y: agent.posY || 0,
         logs,
       };
     });
 
     const mappedConnections = connections.map((c) => ({
-      source: c.source_id,
-      source_handle: c.source_handle || undefined,
-      target: c.target_id,
-      target_handle: c.target_handle || undefined,
+      source: c.sourceId,
+      source_handle: c.sourceHandle || undefined,
+      target: c.targetId,
+      target_handle: c.targetHandle || undefined,
     }));
 
-    return { ...team, agents: agentsWithLogs, connections: mappedConnections };
+    return {
+      id: team.id,
+      name: team.name,
+      objective: team.objective || '',
+      agents: agentsWithLogs,
+      connections: mappedConnections,
+    };
   }
 }

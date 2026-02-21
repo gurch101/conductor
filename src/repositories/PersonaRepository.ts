@@ -1,4 +1,4 @@
-import db from '@/db/schema';
+import db, { personas } from '@/db';
 import type { DBPersona } from '@/types';
 
 /**
@@ -10,6 +10,6 @@ export class PersonaRepository {
    * @returns A list of personas.
    */
   static findAll(): DBPersona[] {
-    return db.prepare('SELECT * FROM personas').all() as DBPersona[];
+    return db.select().from(personas).all();
   }
 }

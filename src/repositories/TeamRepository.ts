@@ -1,5 +1,6 @@
-import db from '@/db/schema';
+import db, { teams } from '@/db';
 import type { DBTeam } from '@/types';
+import { eq, desc } from 'drizzle-orm';
 
 /**
  * Repository for managing teams in the database.
@@ -10,7 +11,7 @@ export class TeamRepository {
    * @returns A list of database teams.
    */
   static findAll(): DBTeam[] {
-    return db.prepare('SELECT * FROM teams ORDER BY created_at DESC').all() as DBTeam[];
+    return db.select().from(teams).orderBy(desc(teams.createdAt)).all();
   }
 
   /**
@@ -19,7 +20,8 @@ export class TeamRepository {
    * @returns The database team or null if not found.
    */
   static findById(id: string): DBTeam | null {
-    return db.prepare('SELECT * FROM teams WHERE id = ?').get(id) as DBTeam | null;
+    const result = db.select().from(teams).where(eq(teams.id, id)).get();
+    return result || null;
   }
 
   /**
@@ -29,6 +31,6 @@ export class TeamRepository {
    * @param objective The team's objective.
    */
   static create(id: string, name: string, objective: string): void {
-    db.prepare('INSERT INTO teams (id, name, objective) VALUES (?, ?, ?)').run(id, name, objective);
+    db.insert(teams).values({ id, name, objective }).run();
   }
 }
