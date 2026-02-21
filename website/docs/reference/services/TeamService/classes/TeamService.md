@@ -1,6 +1,6 @@
 # Class: TeamService
 
-Defined in: [services/TeamService.ts:9](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/services/TeamService.ts#L9)
+Defined in: [services/TeamService.ts:9](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/TeamService.ts#L9)
 
 Service for managing teams and their associated agents and connections.
 
@@ -20,7 +20,7 @@ Service for managing teams and their associated agents and connections.
 
 > `static` **createTeam**(`name`, `objective`): `Team`
 
-Defined in: [services/TeamService.ts:36](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/services/TeamService.ts#L36)
+Defined in: [services/TeamService.ts:36](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/TeamService.ts#L36)
 
 Creates a new team with the specified name and objective.
 
@@ -50,7 +50,7 @@ The newly created team.
 
 > `static` **getAllTeams**(): `Team`[]
 
-Defined in: [services/TeamService.ts:14](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/services/TeamService.ts#L14)
+Defined in: [services/TeamService.ts:14](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/TeamService.ts#L14)
 
 Retrieves all teams with their agents and connections fully hydrated.
 
@@ -66,7 +66,7 @@ A list of hydrated teams.
 
 > `static` **getTeamById**(`id`): `Team` \| `null`
 
-Defined in: [services/TeamService.ts:24](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/services/TeamService.ts#L24)
+Defined in: [services/TeamService.ts:24](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/services/TeamService.ts#L24)
 
 Finds a team by ID and returns it fully hydrated.
 

@@ -1,6 +1,6 @@
 # Class: ConnectionRepository
 
-Defined in: [repositories/ConnectionRepository.ts:7](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/repositories/ConnectionRepository.ts#L7)
+Defined in: [repositories/ConnectionRepository.ts:7](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/ConnectionRepository.ts#L7)
 
 Repository for managing agent connections in the database.
 
@@ -20,7 +20,7 @@ Repository for managing agent connections in the database.
 
 > `static` **create**(`data`): `void`
 
-Defined in: [repositories/ConnectionRepository.ts:26](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/repositories/ConnectionRepository.ts#L26)
+Defined in: [repositories/ConnectionRepository.ts:26](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/ConnectionRepository.ts#L26)
 
 Creates a new connection in the database.
 
@@ -70,7 +70,7 @@ The ID of the team.
 
 > `static` **findByTeamId**(`teamId`): `DBConnection`[]
 
-Defined in: [repositories/ConnectionRepository.ts:13](https://github.com/gurch101/conductor/blob/1d739c147089470895b3af20877f02eddf3f4ad6/src/repositories/ConnectionRepository.ts#L13)
+Defined in: [repositories/ConnectionRepository.ts:13](https://github.com/gurch101/conductor/blob/ca7693e0948bc3c0646f00ecc8fcf2f8829c2840/src/repositories/ConnectionRepository.ts#L13)
 
 Finds connections belonging to a specific team.
 
