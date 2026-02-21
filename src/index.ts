@@ -22,8 +22,8 @@ export const appOptions = {
           const { name, objective } = (await req.json()) as { name: string; objective: string };
           const team = TeamService.createTeam(name, objective);
           return Response.json(team);
-        } catch (error: any) {
-          return new Response(JSON.stringify({ error: error.message }), {
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
           });
@@ -43,8 +43,8 @@ export const appOptions = {
           const { name, objective } = (await req.json()) as { name: string; objective: string };
           TeamService.updateTeam(id, name, objective);
           return Response.json({ success: true });
-        } catch (error: any) {
-          return new Response(JSON.stringify({ error: error.message }), {
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
           });

@@ -68,7 +68,7 @@ export function App() {
       // Try to create with a unique name by checking existing names
       let name = 'New Agent Team';
       let counter = 1;
-      while (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+      while (teams.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
         name = `New Agent Team ${++counter}`;
       }
 
@@ -125,43 +125,13 @@ export function App() {
     setSelectedTeam(updatedTeam);
   }, []);
 
-  const handleUpdateTeamDetails = async (name: string, objective: string) => {
-    if (!selectedTeam) return;
-
-    if (!name || name.trim() === '') {
-      showError('Team name is required.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/teams/${selectedTeam.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, objective }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        showError(errorData.error || 'Failed to update team details');
-        return;
-      }
-
-      const updatedTeam = { ...selectedTeam, name, objective };
-      setSelectedTeam(updatedTeam);
-      setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
-    } catch (error) {
-      console.error('Failed to update team details:', error);
-      showError('An unexpected error occurred while updating the team.');
-    }
-  };
-
   const handleSaveTeam = async () => {
     if (!selectedTeam) return;
-    
+
     // Save latest details before "creating" (finishing)
     const name = nameRef.current?.value || '';
     const objective = objectiveRef.current?.value || selectedTeam.objective;
-    
+
     if (!name || name.trim() === '') {
       showError('Team name is required.');
       return;
@@ -298,7 +268,9 @@ export function App() {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
               <h3 className="text-xl font-bold text-white mb-2">Delete Team?</h3>
               <p className="text-slate-400 mb-6 text-sm">
-                This will permanently remove <strong>{teams.find(t => t.id === teamToDelete)?.name}</strong> and all its agents, connections, and logs. This action cannot be undone.
+                This will permanently remove{' '}
+                <strong>{teams.find((t) => t.id === teamToDelete)?.name}</strong> and all its
+                agents, connections, and logs. This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button

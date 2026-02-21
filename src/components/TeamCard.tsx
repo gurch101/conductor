@@ -1,6 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Team } from '../types';
-import { Users, Coins, CheckCircle2, AlertCircle, PlayCircle, MoreVertical, Trash2 } from 'lucide-react';
+import {
+  Users,
+  Coins,
+  CheckCircle2,
+  AlertCircle,
+  PlayCircle,
+  MoreVertical,
+  Trash2,
+} from 'lucide-react';
 
 interface TeamCardProps {
   team: Team;
@@ -64,7 +72,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
             >
               <MoreVertical size={16} />
             </button>
-            
+
             {showMenu && (
               <div className="absolute left-0 mt-1 w-36 bg-slate-900 border border-slate-800 rounded-lg shadow-xl z-[60] py-1 animate-in fade-in zoom-in-95 duration-100">
                 <button

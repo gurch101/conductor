@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll } from 'bun:test';
 import { TeamService } from '@/services/TeamService';
 import { initDb } from '@/db';
-import type { Team } from '@/types';
 
 describe('TeamService', () => {
   beforeAll(() => {
@@ -36,7 +35,9 @@ describe('TeamService', () => {
   it('createTeam should fail if name is not unique', () => {
     const name = 'Duplicate Name';
     TeamService.createTeam(name, 'First');
-    expect(() => TeamService.createTeam(name, 'Second')).toThrow(`Team name "${name}" is already taken.`);
+    expect(() => TeamService.createTeam(name, 'Second')).toThrow(
+      `Team name "${name}" is already taken.`
+    );
   });
 
   it('updateTeam should fail if name is empty', () => {
@@ -45,9 +46,11 @@ describe('TeamService', () => {
   });
 
   it('updateTeam should fail if name is taken by another team', () => {
-    const team1 = TeamService.createTeam('Team 1', 'Obj 1');
+    TeamService.createTeam('Team 1', 'Obj 1');
     const team2 = TeamService.createTeam('Team 2', 'Obj 2');
-    expect(() => TeamService.updateTeam(team2.id, 'Team 1', 'Updated Obj')).toThrow('Team name "Team 1" is already taken.');
+    expect(() => TeamService.updateTeam(team2.id, 'Team 1', 'Updated Obj')).toThrow(
+      'Team name "Team 1" is already taken.'
+    );
   });
 
   it('updateTeam should succeed if name is same for the same team', () => {
