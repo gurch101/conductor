@@ -79,8 +79,7 @@ export class ConnectionRepository {
   /**
    * Replaces all connections for a team.
    * @param teamId The ID of the team.
-   * @param connections The new connections list.
-   * @param nextConnections
+   * @param nextConnections The new connections list.
    */
   static replaceForTeam(
     teamId: string,
