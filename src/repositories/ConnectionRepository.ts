@@ -75,4 +75,32 @@ export class ConnectionRepository {
       )
       .run();
   }
+
+  /**
+   * Replaces all connections for a team.
+   * @param teamId The ID of the team.
+   * @param connections The new connections list.
+   */
+  static replaceForTeam(
+    teamId: string,
+    nextConnections: {
+      source: string;
+      source_handle?: string;
+      target: string;
+      target_handle?: string;
+    }[]
+  ): void {
+    db.delete(connections).where(eq(connections.teamId, teamId)).run();
+    for (const conn of nextConnections) {
+      db.insert(connections)
+        .values({
+          teamId,
+          sourceId: conn.source,
+          sourceHandle: conn.source_handle || null,
+          targetId: conn.target,
+          targetHandle: conn.target_handle || null,
+        })
+        .run();
+    }
+  }
 }

@@ -7,7 +7,7 @@ import type { Agent } from '@/types';
 // Mock React Flow
 mock.module('reactflow', () => ({
   Handle: () => <div data-testid="handle" />,
-  Position: { Top: 'top', Bottom: 'bottom' },
+  Position: { Top: 'top', Bottom: 'bottom', Left: 'left', Right: 'right' },
   useReactFlow: () => ({ deleteElements: () => {} }),
 }));
 
@@ -36,5 +36,36 @@ describe('AgentNode Component', () => {
     render(<AgentNode data={mockAgent} />);
     // The text might be split, so let's check for the value
     expect(screen.getByText(/0\.030/)).toBeDefined();
+  });
+
+  it('hides delete button for Start node', () => {
+    render(
+      <AgentNode
+        data={{
+          ...mockAgent,
+          persona_name: 'Start',
+          persona_id: 'persona-start',
+        }}
+      />
+    );
+    expect(screen.queryByTitle('Delete Agent')).toBeNull();
+  });
+
+  it('hides delete button for End node', () => {
+    render(
+      <AgentNode
+        data={{
+          ...mockAgent,
+          persona_name: 'End',
+          persona_id: 'persona-end',
+        }}
+      />
+    );
+    expect(screen.queryByTitle('Delete Agent')).toBeNull();
+  });
+
+  it('shows delete button for non-protected nodes', () => {
+    render(<AgentNode data={mockAgent} />);
+    expect(screen.getByTitle('Delete Agent')).toBeDefined();
   });
 });

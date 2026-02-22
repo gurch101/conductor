@@ -54,7 +54,7 @@ export const PersonaSidebar: React.FC = () => {
     <aside className="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col h-full shrink-0">
       <div className="p-4 border-b border-slate-800 shrink-0">
         <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
-          Persona Library
+          Workflow Toolbox
         </h2>
       </div>
 

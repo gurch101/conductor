@@ -11,6 +11,11 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
   const [showLogs, setShowLogs] = useState(false);
   const { deleteElements } = useReactFlow();
   const cost = ((data.tokensUsed / 1000) * 0.02).toFixed(3);
+  const isProtectedNode =
+    data.persona_name === 'Start' ||
+    data.persona_name === 'End' ||
+    data.persona_id === 'persona-start' ||
+    data.persona_id === 'persona-end';
 
   const statusColors = {
     done: 'bg-green-500',
@@ -44,13 +49,15 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
           <div className="flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-[9px] text-slate-400 shrink-0">
             <Coins size={8} className="text-yellow-500" />${cost}
           </div>
-          <button
-            onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
-            className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-            title="Delete Agent"
-          >
-            <Trash2 size={10} />
-          </button>
+          {!isProtectedNode && (
+            <button
+              onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
+              className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+              title="Delete Agent"
+            >
+              <Trash2 size={10} />
+            </button>
+          )}
         </div>
       </div>
 

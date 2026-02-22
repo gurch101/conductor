@@ -142,7 +142,12 @@ export function App() {
       const response = await fetch(`/api/teams/${selectedTeam.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, objective }),
+        body: JSON.stringify({
+          name,
+          objective,
+          agents: selectedTeam.agents,
+          connections: selectedTeam.connections,
+        }),
       });
 
       if (!response.ok) {

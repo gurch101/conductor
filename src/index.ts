@@ -42,8 +42,18 @@ export const appOptions = {
       PUT: async (req: Request) => {
         try {
           const id = req.params.id;
-          const { name, objective } = (await req.json()) as { name: string; objective: string };
-          TeamService.updateTeam(id, name, objective);
+          const { name, objective, agents, connections } = (await req.json()) as {
+            name: string;
+            objective: string;
+            agents?: Agent[];
+            connections?: {
+              source: string;
+              source_handle?: string;
+              target: string;
+              target_handle?: string;
+            }[];
+          };
+          TeamService.updateTeam(id, name, objective, agents, connections);
           return Response.json({ success: true });
         } catch (error) {
           return new Response(JSON.stringify({ error: (error as Error).message }), {
