@@ -37,9 +37,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
 
   const allDone = team.agents.length > 0 && team.agents.every((a) => a.status === AgentStatus.Done);
   const hasYellow = team.agents.some((a) => a.status === AgentStatus.WaitingForFeedback);
-  const hasWorking = team.agents.some(
-    (a) => a.status === AgentStatus.Working || a.status === AgentStatus.Ready
-  );
+  const hasWorking = team.agents.some((a) => a.status === AgentStatus.Working);
+  const hasReady = team.agents.some((a) => a.status === AgentStatus.Ready);
 
   let statusColor = 'border-slate-700 bg-slate-800/50 text-slate-500';
   let StatusIcon = PlayCircle;
@@ -50,11 +49,23 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
   } else if (hasYellow) {
     statusColor = 'border-yellow-500 bg-yellow-500/10 text-yellow-400';
     StatusIcon = AlertCircle;
-  } else if (hasWorking || team.agents.length > 0) {
+  } else if (hasWorking) {
     statusColor = 'border-blue-500 bg-blue-500/10 text-blue-400';
+    StatusIcon = PlayCircle;
+  } else if (hasReady || team.agents.length > 0) {
+    statusColor = 'border-emerald-500 bg-emerald-500/10 text-emerald-400';
     StatusIcon = PlayCircle;
   }
 
+  const visibleAgents = team.agents.filter(
+    (agent) =>
+      agent.persona_name !== 'Start' &&
+      agent.persona_name !== 'End' &&
+      agent.persona_name !== 'Gateway' &&
+      agent.persona_id !== 'persona-start' &&
+      agent.persona_id !== 'persona-end' &&
+      agent.persona_id !== 'persona-gateway'
+  );
   const totalTokens = team.agents.reduce((acc, curr) => acc + curr.tokensUsed, 0);
   const cost = ((totalTokens / 1000) * 0.02).toFixed(2);
 
@@ -102,7 +113,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
           className={`px-2 py-1 rounded-full border text-[10px] flex items-center gap-1 shrink-0 ${statusColor}`}
         >
           <StatusIcon size={12} />
-          {allDone ? 'Done' : hasYellow ? 'Action Needed' : 'Working'}
+          {allDone ? 'Done' : hasYellow ? 'Action Needed' : hasWorking ? 'Working' : 'Ready'}
         </div>
       </div>
 
@@ -114,7 +125,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Users size={16} className="text-slate-600" />
-            <span>{team.agents.length} Agents</span>
+            <span>{visibleAgents.length} Agents</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Coins size={16} className="text-slate-600" />
