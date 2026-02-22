@@ -10,6 +10,11 @@ import type { Team, Agent, DBTeam } from '@/types';
  * Service for managing teams and their associated agents and connections.
  */
 export class TeamService {
+  /**
+   * Returns true when an agent is a built-in orchestration/system node.
+   * @param agent The agent to classify.
+   * @returns True when the agent is Start, End, or Gateway.
+   */
   private static isSystemAgent(agent: Agent): boolean {
     return (
       agent.persona_id === 'persona-start' ||

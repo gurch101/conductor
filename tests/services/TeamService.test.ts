@@ -36,10 +36,15 @@ describe('TeamService', () => {
     const start = team.agents.find((a) => a.persona_name === 'Start')!;
     const end = team.agents.find((a) => a.persona_name === 'End')!;
     const dev = buildDeveloperAgent(team.id);
-    TeamService.updateTeam(team.id, newName, [start, dev, end], [
-      { source: start.id, target: dev.id },
-      { source: dev.id, target: end.id },
-    ]);
+    TeamService.updateTeam(
+      team.id,
+      newName,
+      [start, dev, end],
+      [
+        { source: start.id, target: dev.id },
+        { source: dev.id, target: end.id },
+      ]
+    );
 
     // 3. Retrieve and verify
     const updatedTeam = TeamService.getTeamById(team.id);
@@ -77,10 +82,15 @@ describe('TeamService', () => {
     const end = team.agents.find((a) => a.persona_name === 'End')!;
     const dev = buildDeveloperAgent(team.id);
     // This should NOT throw
-    TeamService.updateTeam(team.id, 'Same Name', [start, dev, end], [
-      { source: start.id, target: dev.id },
-      { source: dev.id, target: end.id },
-    ]);
+    TeamService.updateTeam(
+      team.id,
+      'Same Name',
+      [start, dev, end],
+      [
+        { source: start.id, target: dev.id },
+        { source: dev.id, target: end.id },
+      ]
+    );
     const updated = TeamService.getTeamById(team.id);
     expect(updated?.name).toBe('Same Name');
   });
