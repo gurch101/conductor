@@ -94,14 +94,12 @@ describe('Server API', () => {
   it('POST /api/teams - should create a new team', async () => {
     const newTeam = {
       name: 'API Test Team',
-      objective: 'Verify API functionality',
     };
 
     const res = await callPost('/api/teams', newTeam);
     expect(res.status).toBe(200);
     const team = (await res.json()) as Team;
     expect(team.name).toBe(newTeam.name);
-    expect(team.objective).toBe(newTeam.objective);
     expect(team.id).toBeDefined();
   });
 
@@ -223,7 +221,6 @@ describe('Server API', () => {
 
     const updatedDetails = {
       name: 'Updated Test Team',
-      objective: 'Verify update functionality works',
     };
     const updateRes = await callPut('/api/teams/:id', { id: team.id }, updatedDetails);
     expect(updateRes.status).toBe(200);
@@ -234,7 +231,6 @@ describe('Server API', () => {
     });
     const updatedTeam = (await getRes.json()) as Team;
     expect(updatedTeam.name).toBe(updatedDetails.name);
-    expect(updatedTeam.objective).toBe(updatedDetails.objective);
   });
 
   it('DELETE /api/teams/:id - should delete the team', async () => {
@@ -259,7 +255,6 @@ describe('Server API', () => {
   it('DELETE /api/agents/:id - should delete an agent', async () => {
     const teamRes = await callPost('/api/teams', {
       name: 'Delete Agent Team',
-      objective: 'Test deletion',
     });
     const team = (await teamRes.json()) as Team;
 
@@ -290,7 +285,6 @@ describe('Server API', () => {
   it('PUT /api/agents/:id - should update agent position', async () => {
     const teamRes = await callPost('/api/teams', {
       name: 'Move Agent Team',
-      objective: 'Test movement',
     });
     const team = (await teamRes.json()) as Team;
 
@@ -343,7 +337,6 @@ describe('Server API', () => {
 
     const teamRes = await callPost('/api/teams', {
       name: 'Usage Test Team',
-      objective: 'Test usage',
     });
     const team = (await teamRes.json()) as Team;
 
@@ -371,7 +364,6 @@ describe('Server API', () => {
   it('POST /api/teams/:id/start and /api/teams/:id/respond - should run and accept human responses', async () => {
     const teamRes = await callPost('/api/teams', {
       name: 'Run Team',
-      objective: 'Ship a release safely',
     });
     const team = (await teamRes.json()) as Team;
 
@@ -401,7 +393,13 @@ describe('Server API', () => {
       output_schema: [],
     });
 
-    const startRes = await callPostWithParams('/api/teams/:id/start', { id: team.id });
+    const startRes = await callPostWithParams(
+      '/api/teams/:id/start',
+      { id: team.id },
+      {
+        goal: 'Ship a release safely',
+      }
+    );
     expect(startRes.status).toBe(200);
     const startedTeam = (await startRes.json()) as Team;
     expect(startedTeam.agents.some((a) => a.status === AgentStatus.WaitingForFeedback)).toBe(true);
@@ -425,7 +423,6 @@ describe('Server API', () => {
   it('GET /api/teams/:id/stream - should return initial NDJSON events', async () => {
     const teamRes = await callPost('/api/teams', {
       name: 'Stream Team',
-      objective: 'Validate streaming',
     });
     const team = (await teamRes.json()) as Team;
 
@@ -445,7 +442,6 @@ describe('Server API', () => {
   it('DELETE /api/teams/:id - should fail if the team has an active stream', async () => {
     const teamRes = await callPost('/api/teams', {
       name: 'Active Stream Team',
-      objective: 'Cannot be deleted while active',
     });
     const team = (await teamRes.json()) as Team;
 

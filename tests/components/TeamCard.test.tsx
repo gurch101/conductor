@@ -13,12 +13,11 @@ describe('TeamCard Component', () => {
   const mockTeam: Team = {
     id: '1',
     name: 'Test Team',
-    objective: 'Test Objective',
     agents: [],
     connections: [],
   };
 
-  it('renders team name and objective', () => {
+  it('renders team name', () => {
     render(
       <TeamCard
         team={mockTeam}
@@ -29,7 +28,6 @@ describe('TeamCard Component', () => {
       />
     );
     expect(screen.getByText('Test Team')).toBeDefined();
-    expect(screen.getByText('Test Objective')).toBeDefined();
   });
 
   it('calls onClick when the card is clicked', () => {

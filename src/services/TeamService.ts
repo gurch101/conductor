@@ -43,13 +43,12 @@ export class TeamService {
   }
 
   /**
-   * Creates a new team with the specified name and objective.
+   * Creates a new team with the specified name.
    * @param name The name of the team.
-   * @param objective The objective of the team.
    * @returns The newly created team.
    * @throws Error if the name is empty or already exists.
    */
-  static createTeam(name: string, objective: string): Team {
+  static createTeam(name: string): Team {
     if (!name || name.trim() === '') {
       throw new Error('Team name is required.');
     }
@@ -57,7 +56,7 @@ export class TeamService {
       throw new Error(`Team name "${name}" is already taken.`);
     }
     const id = crypto.randomUUID();
-    TeamRepository.create(id, name, objective);
+    TeamRepository.create(id, name);
     const startAgent: Agent = {
       id: `agent-start-${crypto.randomUUID()}`,
       team_id: id,
@@ -107,10 +106,9 @@ export class TeamService {
   }
 
   /**
-   * Updates an existing team's name and objective.
+   * Updates an existing team's name.
    * @param id The ID of the team.
    * @param name The new name.
-   * @param objective The new objective.
    * @param agents
    * @param connections
    * @throws Error if the name is empty or already exists for another team.
@@ -118,7 +116,6 @@ export class TeamService {
   static updateTeam(
     id: string,
     name: string,
-    objective: string,
     agents?: Agent[],
     connections?: {
       source: string;
@@ -134,14 +131,14 @@ export class TeamService {
       throw new Error(`Team name "${name}" is already taken.`);
     }
     if (agents && connections) {
-      this.ensureStartEndAndPath({ id, name, objective, agents, connections });
+      this.ensureStartEndAndPath({ id, name, agents, connections });
     } else {
       const current = this.getTeamById(id);
       if (current) {
         this.ensureStartEndAndPath(current);
       }
     }
-    TeamRepository.update(id, name, objective);
+    TeamRepository.update(id, name);
     if (agents && connections) {
       this.syncAgents(id, agents);
       this.syncConnections(id, connections);
@@ -316,10 +313,11 @@ export class TeamService {
   /**
    * Starts orchestration for a team and seeds initial runtime state.
    * @param id The ID of the team.
+   * @param initialGoal
    * @returns The updated hydrated team.
    * @throws Error if the team does not exist or has no agents.
    */
-  static startTeam(id: string): Team {
+  static startTeam(id: string, initialGoal: string): Team {
     const team = TeamRepository.findById(id);
     if (!team) {
       throw new Error('Team not found.');
@@ -340,18 +338,28 @@ export class TeamService {
       throw new Error('Cannot start a team with only system agents.');
     }
 
+    if (!initialGoal || initialGoal.trim() === '') {
+      throw new Error('Initial goal is required to start a team.');
+    }
+
     for (const agent of activeAgents) {
       if (agent.status !== AgentStatus.Done) {
         AgentRepository.updateStatus(agent.id, AgentStatus.Working);
       }
     }
 
+    const nextAgents = this.getNextAgents(id).filter(
+      (agent) =>
+        agent.persona_id !== 'persona-start' &&
+        agent.persona_id !== 'persona-end' &&
+        agent.persona_id !== 'persona-gateway'
+    );
     const leadAgent =
-      activeAgents.find((agent) => agent.status !== AgentStatus.Done) || activeAgents[0]!;
+      nextAgents[0] ||
+      activeAgents.find((agent) => agent.status !== AgentStatus.Done) ||
+      activeAgents[0]!;
     AgentRepository.addLog(leadAgent.id, 'Orchestrator started team execution.');
-    if (team.objective) {
-      AgentRepository.addLog(leadAgent.id, `Working on objective: ${team.objective}`);
-    }
+    AgentRepository.addLog(leadAgent.id, `Initial goal: ${initialGoal.trim()}`);
 
     const reviewerAgent = activeAgents.find(
       (agent) => agent.id !== leadAgent.id && agent.status !== AgentStatus.Done
@@ -438,7 +446,6 @@ export class TeamService {
     return {
       id: team.id,
       name: team.name,
-      objective: team.objective || '',
       agents: agentsWithLogs,
       connections: mappedConnections,
     };

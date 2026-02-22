@@ -126,7 +126,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Clarify objective or provide manual override commands..."
+                placeholder="Clarify goals or provide manual override commands..."
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-12 pr-12 text-sm text-white focus:outline-none focus:border-blue-500 transition-all shadow-inner placeholder:text-slate-600"
               />
               <button

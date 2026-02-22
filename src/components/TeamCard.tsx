@@ -131,10 +131,6 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdi
         </div>
       </div>
 
-      <p className="text-slate-400 text-sm line-clamp-2 mb-6 italic">
-        {team.objective || 'No objective set for this team yet...'}
-      </p>
-
       <div className="mt-auto pt-4 border-t border-slate-800/50 flex items-center justify-between text-slate-500 text-xs">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">

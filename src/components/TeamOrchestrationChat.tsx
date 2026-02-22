@@ -7,37 +7,55 @@ interface TeamOrchestrationChatProps {
   team: Team;
   onBack: () => void;
   onRespond: (agentId: string, message: string) => Promise<void>;
+  onStart: (goal: string) => Promise<void>;
+  isStarted: boolean;
 }
 
 export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
   team,
   onBack,
   onRespond,
+  onStart,
+  isStarted,
 }) => {
   const [response, setResponse] = useState('');
   const [focusedAgentId, setFocusedAgentId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const activeAgents = useMemo(
+    () =>
+      team.agents.filter(
+        (agent) =>
+          agent.persona_name !== 'Start' &&
+          agent.persona_name !== 'End' &&
+          agent.persona_name !== 'Gateway' &&
+          agent.persona_id !== 'persona-start' &&
+          agent.persona_id !== 'persona-end' &&
+          agent.persona_id !== 'persona-gateway'
+      ),
+    [team.agents]
+  );
+
   const workingAgent = useMemo(
-    () => team.agents.find((a) => a.status === AgentStatus.Working) || null,
-    [team]
+    () => activeAgents.find((a) => a.status === AgentStatus.Working) || null,
+    [activeAgents]
   );
   const waitingAgents = useMemo(
-    () => team.agents.filter((a) => a.status === AgentStatus.WaitingForFeedback),
-    [team]
+    () => activeAgents.filter((a) => a.status === AgentStatus.WaitingForFeedback),
+    [activeAgents]
   );
   const focusedAgent = useMemo(
-    () => team.agents.find((a) => a.id === focusedAgentId) || null,
-    [team.agents, focusedAgentId]
+    () => activeAgents.find((a) => a.id === focusedAgentId) || null,
+    [activeAgents, focusedAgentId]
   );
 
   useEffect(() => {
-    const focusedStillExists = team.agents.some((a) => a.id === focusedAgentId);
+    const focusedStillExists = activeAgents.some((a) => a.id === focusedAgentId);
     if (!focusedStillExists) {
-      setFocusedAgentId(waitingAgents[0]?.id || workingAgent?.id || team.agents[0]?.id || '');
+      setFocusedAgentId(waitingAgents[0]?.id || workingAgent?.id || activeAgents[0]?.id || '');
     }
-  }, [waitingAgents, workingAgent, team.agents, focusedAgentId]);
+  }, [waitingAgents, workingAgent, activeAgents, focusedAgentId]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,7 +74,18 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!response.trim() || !focusedAgentId || isSending) return;
+    if (!response.trim() || isSending) return;
+    if (!isStarted) {
+      setIsSending(true);
+      try {
+        await onStart(response.trim());
+        setResponse('');
+      } finally {
+        setIsSending(false);
+      }
+      return;
+    }
+    if (!focusedAgentId) return;
 
     setIsSending(true);
     try {
@@ -76,9 +105,6 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
           </button>
           <div className="min-w-0">
             <h2 className="text-sm font-bold text-slate-100 truncate">{team.name}</h2>
-            <p className="text-[11px] text-slate-500 truncate">
-              {team.objective || 'No objective set'}
-            </p>
           </div>
         </div>
         <div className="text-xs text-slate-400 hidden sm:flex items-center gap-2">
@@ -93,7 +119,7 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
         <aside className="w-80 border-r border-slate-800 bg-slate-900/20 p-4 overflow-y-auto hidden lg:block">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Agents</h3>
           <div className="space-y-2">
-            {team.agents.map((agent) => {
+            {activeAgents.map((agent) => {
               const label =
                 agent.status === AgentStatus.Done
                   ? 'Done'
@@ -140,7 +166,9 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
               <div className="text-xs text-slate-500">
                 {focusedAgent
                   ? 'No activity yet for this agent.'
-                  : 'No activity yet. Start the team to begin orchestration.'}
+                  : isStarted
+                    ? 'No activity yet.'
+                    : 'Enter an initial goal to start orchestration.'}
               </div>
             )}
             {focusedTimeline.map((event) => {
@@ -181,12 +209,18 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
           <div className="border-t border-slate-800 p-4 bg-slate-900/30">
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="text-[11px] text-slate-500">
-                Focused agent:{' '}
-                <span className="text-slate-300">
-                  {focusedAgent
-                    ? focusedAgent.persona_name || focusedAgent.description
-                    : 'Select an agent from the left panel'}
-                </span>
+                {isStarted ? (
+                  <>
+                    Focused agent:{' '}
+                    <span className="text-slate-300">
+                      {focusedAgent
+                        ? focusedAgent.persona_name || focusedAgent.description
+                        : 'Select an agent from the left panel'}
+                    </span>
+                  </>
+                ) : (
+                  <span>Initial goal</span>
+                )}
               </div>
 
               <div className="relative">
@@ -194,12 +228,16 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
                   type="text"
                   value={response}
                   onChange={(e) => setResponse(e.target.value)}
-                  placeholder="Reply with clarifications, decisions, or access approvals..."
+                  placeholder={
+                    isStarted
+                      ? 'Reply with clarifications, decisions, or access approvals...'
+                      : 'Describe the initial goal to kick off the team...'
+                  }
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-3 pr-10 text-sm text-white focus:outline-none focus:border-blue-500"
                 />
                 <button
                   type="submit"
-                  disabled={!response.trim() || !focusedAgentId || isSending}
+                  disabled={!response.trim() || (isStarted && !focusedAgentId) || isSending}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 disabled:text-slate-700"
                 >
                   {isSending ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}

@@ -37,8 +37,8 @@ export const appOptions = {
       GET: () => Response.json(TeamService.getAllTeams()),
       POST: async (req: Request) => {
         try {
-          const { name, objective } = (await req.json()) as { name: string; objective: string };
-          const team = TeamService.createTeam(name, objective);
+          const { name } = (await req.json()) as { name: string };
+          const team = TeamService.createTeam(name);
           TeamStreamService.publishTeamSnapshot(team);
           return Response.json(team);
         } catch (error) {
@@ -59,9 +59,8 @@ export const appOptions = {
       PUT: async (req: Request) => {
         try {
           const id = req.params.id;
-          const { name, objective, agents, connections } = (await req.json()) as {
+          const { name, agents, connections } = (await req.json()) as {
             name: string;
-            objective: string;
             agents?: Agent[];
             connections?: {
               source: string;
@@ -70,7 +69,7 @@ export const appOptions = {
               target_handle?: string;
             }[];
           };
-          TeamService.updateTeam(id, name, objective, agents, connections);
+          TeamService.updateTeam(id, name, agents, connections);
           publishTeamSnapshotById(id);
           return Response.json({ success: true });
         } catch (error) {
@@ -158,9 +157,10 @@ export const appOptions = {
     },
 
     '/api/teams/:id/start': {
-      POST: (req) => {
+      POST: async (req: Request) => {
         try {
-          const team = TeamService.startTeam(req.params.id);
+          const { goal } = (await req.json()) as { goal: string };
+          const team = TeamService.startTeam(req.params.id, goal);
           TeamStreamService.publishTeamSnapshot(team);
           for (const agent of team.agents) {
             TeamStreamService.publishAgentStatus(team.id, agent.id, agent.status);

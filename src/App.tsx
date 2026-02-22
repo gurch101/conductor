@@ -24,7 +24,6 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
-  const objectiveRef = useRef<HTMLTextAreaElement>(null);
 
   const showError = (msg: string) => {
     setError(msg);
@@ -83,7 +82,6 @@ export function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          objective: '',
         }),
       });
 
@@ -137,7 +135,6 @@ export function App() {
 
     // Save latest details before "creating" (finishing)
     const name = nameRef.current?.value || '';
-    const objective = objectiveRef.current?.value || selectedTeam.objective;
 
     if (!name || name.trim() === '') {
       showError('Team name is required.');
@@ -150,7 +147,6 @@ export function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          objective,
           agents: selectedTeam.agents,
           connections: selectedTeam.connections,
         }),
@@ -162,7 +158,7 @@ export function App() {
         return;
       }
 
-      const updatedTeam = { ...selectedTeam, name, objective };
+      const updatedTeam = { ...selectedTeam, name };
       setSelectedTeam(updatedTeam);
       setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
       handleBackToDashboard();
@@ -172,10 +168,18 @@ export function App() {
     }
   };
 
-  const handleStartTeam = async (team: Team) => {
+  const handleStartTeam = (team: Team) => {
+    setSelectedTeam(team);
+    setSelectedAgent(null);
+    setCurrentView('team-chat');
+  };
+
+  const handleStartTeamWithGoal = async (teamId: string, goal: string) => {
     try {
-      const response = await fetch(`/api/teams/${team.id}/start`, {
+      const response = await fetch(`/api/teams/${teamId}/start`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goal }),
       });
 
       if (!response.ok) {
@@ -190,7 +194,6 @@ export function App() {
         updatedTeam.agents.find((a) => a.status === AgentStatus.WaitingForFeedback) || null
       );
       setTeams((prev) => prev.map((t) => (t.id === updatedTeam.id ? updatedTeam : t)));
-      setCurrentView('team-chat');
     } catch (error) {
       console.error('Failed to start team:', error);
       showError('An unexpected error occurred while starting the team.');
@@ -224,6 +227,12 @@ export function App() {
   };
 
   const streamingTeamId = selectedTeam?.id;
+  const isTeamStarted = selectedTeam
+    ? selectedTeam.agents.some(
+        (agent) =>
+          agent.status === AgentStatus.Working || agent.status === AgentStatus.WaitingForFeedback
+      )
+    : false;
 
   useEffect(() => {
     if (currentView !== 'team-chat' || !streamingTeamId) return;
@@ -499,24 +508,10 @@ export function App() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                      Global Team Goal
-                    </span>
-                    <span className="text-xs text-slate-600">
-                      Drag & drop personas to the canvas below
-                    </span>
-                  </div>
-                  <div className="relative group">
-                    <textarea
-                      ref={objectiveRef}
-                      key={`obj-${selectedTeam.id}`}
-                      defaultValue={selectedTeam.objective}
-                      placeholder="Describe the high-level goal for this team..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-lg text-slate-200 focus:outline-none focus:border-blue-500 transition-colors min-h-[140px] resize-none group-hover:border-slate-700"
-                    />
-                  </div>
+                <div className="flex justify-end">
+                  <span className="text-xs text-slate-600">
+                    Drag & drop personas to the canvas below
+                  </span>
                 </div>
               </div>
               <div className="flex-1 relative w-full h-full">
@@ -542,6 +537,8 @@ export function App() {
             team={selectedTeam}
             onBack={handleBackToDashboard}
             onRespond={handleTeamResponse}
+            onStart={(goal) => handleStartTeamWithGoal(selectedTeam.id, goal)}
+            isStarted={isTeamStarted}
           />
         )}
       </main>

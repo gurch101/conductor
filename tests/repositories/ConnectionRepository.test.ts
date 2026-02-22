@@ -12,7 +12,7 @@ describe('ConnectionRepository', () => {
   });
 
   it('replaceForTeam should replace all connections for a team', () => {
-    const team = TeamService.createTeam('Connections Replace', 'Objective');
+    const team = TeamService.createTeam('Connections Replace');
     const start = team.agents.find((a) => a.persona_name === 'Start')!;
     const end = team.agents.find((a) => a.persona_name === 'End')!;
 

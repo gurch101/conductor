@@ -38,20 +38,18 @@ export class TeamRepository {
    * Creates a new team in the database.
    * @param id The ID of the team.
    * @param name The name of the team.
-   * @param objective The team's objective.
    */
-  static create(id: string, name: string, objective: string): void {
-    db.insert(teams).values({ id, name, objective }).run();
+  static create(id: string, name: string): void {
+    db.insert(teams).values({ id, name }).run();
   }
 
   /**
-   * Updates an existing team's name and objective.
+   * Updates an existing team's name.
    * @param id The ID of the team to update.
    * @param name The new name.
-   * @param objective The new objective.
    */
-  static update(id: string, name: string, objective: string): void {
-    db.update(teams).set({ name, objective }).where(eq(teams.id, id)).run();
+  static update(id: string, name: string): void {
+    db.update(teams).set({ name }).where(eq(teams.id, id)).run();
   }
 
   /**
