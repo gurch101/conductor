@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'bun:test';
 import { TeamService } from '@/services/TeamService';
 import { initDb } from '@/db';
 import type { Agent } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 describe('TeamService', () => {
   beforeAll(() => {
@@ -115,7 +116,7 @@ describe('TeamService', () => {
       persona_id: 'persona-developer',
       persona_name: 'Developer',
       description: 'Takes requirements and implements features.',
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Implement features.',
       tokensUsed: 0,
       input_schema: [],
@@ -147,7 +148,7 @@ describe('TeamService', () => {
       persona_id: 'persona-qa-tester',
       persona_name: 'QA Tester',
       description: 'Validates quality and expected behavior through testing.',
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Test changes.',
       tokensUsed: 0,
       input_schema: [],
@@ -162,7 +163,7 @@ describe('TeamService', () => {
       persona_id: 'persona-business-analyst',
       persona_name: 'Business Analyst (BA)',
       description: 'Translates high-level requirements in the PRD to detailed requirements.',
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Refine requirements.',
       tokensUsed: 0,
       input_schema: [],

@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { AgentNode } from '@/components/AgentNode';
 import type { Agent } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 // Mock React Flow
 mock.module('reactflow', () => ({
@@ -17,7 +18,7 @@ describe('AgentNode Component', () => {
     team_id: 't1',
     persona_name: 'Researcher',
     description: 'Researcher',
-    status: 'working',
+    status: AgentStatus.Working,
     summary: 'Researching tech',
     tokensUsed: 1500,
     input_schema: [],

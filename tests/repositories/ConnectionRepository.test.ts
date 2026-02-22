@@ -4,6 +4,7 @@ import { TeamService } from '@/services/TeamService';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
 import { AgentRepository } from '@/repositories/AgentRepository';
 import type { Agent } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 describe('ConnectionRepository', () => {
   beforeAll(() => {
@@ -21,7 +22,7 @@ describe('ConnectionRepository', () => {
       persona_id: 'persona-developer',
       persona_name: 'Developer',
       description: 'Takes requirements and implements features.',
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Extra node.',
       tokensUsed: 0,
       input_schema: [],

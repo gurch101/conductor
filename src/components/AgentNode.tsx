@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
 import type { Agent } from '../types';
 import { Coins, Terminal, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { AgentStatus } from '@/constants/agentStatus';
+import type { AgentStatusValue } from '@/constants/agentStatus';
 
 interface AgentNodeProps {
   data: Agent;
@@ -17,10 +19,11 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
     data.persona_id === 'persona-start' ||
     data.persona_id === 'persona-end';
 
-  const statusColors = {
-    done: 'bg-green-500',
-    working: 'bg-blue-500',
-    waiting_approval: 'bg-yellow-500',
+  const statusColors: Record<AgentStatusValue, string> = {
+    [AgentStatus.Done]: 'bg-green-500',
+    [AgentStatus.Working]: 'bg-blue-500',
+    [AgentStatus.Ready]: 'bg-cyan-500',
+    [AgentStatus.WaitingForFeedback]: 'bg-yellow-500',
   };
 
   return (

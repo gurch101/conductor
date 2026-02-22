@@ -1,4 +1,5 @@
 import { AgentRepository } from '@/repositories/AgentRepository';
+import { AgentStatus } from '@/constants/agentStatus';
 import type { Agent } from '@/types';
 
 /**
@@ -14,7 +15,7 @@ export class AgentService {
     AgentRepository.create({
       ...agent,
       id,
-      status: agent.status || 'working',
+      status: agent.status || AgentStatus.Ready,
       tokensUsed: agent.tokensUsed || 0,
       input_schema: agent.input_schema || [],
       output_schema: agent.output_schema || [],

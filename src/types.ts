@@ -1,8 +1,10 @@
+import type { AgentStatusValue } from './constants/agentStatus';
+
 export interface DBAgent {
   id: string;
   teamId: string;
   personaId: string | null;
-  status: 'done' | 'working' | 'waiting_approval';
+  status: AgentStatusValue;
   summary: string | null;
   tokensUsed: number | null;
   inputSchema: string | null;
@@ -41,7 +43,7 @@ export interface Agent {
   persona_id?: string;
   persona_name?: string;
   description: string;
-  status: 'done' | 'working' | 'waiting_approval';
+  status: AgentStatusValue;
   summary: string;
   tokensUsed: number;
   input_schema: { name: string; type: string }[];

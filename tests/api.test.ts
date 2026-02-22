@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'bun:test';
 import { appOptions } from '@/index';
 import { initDb } from '@/db';
 import type { Team, Persona } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 type RouteHandler = (
   req?: Request & { params?: Record<string, string> }
@@ -102,7 +103,7 @@ describe('Server API', () => {
       id: 'test-agent-1',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Testing agent creation',
       tokensUsed: 0,
       input_schema: [],
@@ -137,7 +138,7 @@ describe('Server API', () => {
       id: 'test-agent-2',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Second agent',
       tokensUsed: 0,
       input_schema: [],
@@ -243,7 +244,7 @@ describe('Server API', () => {
     await callPost('/api/agents', {
       id: agentId,
       team_id: team.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],
@@ -274,7 +275,7 @@ describe('Server API', () => {
     await callPost('/api/agents', {
       id: agentId,
       team_id: team.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],
@@ -327,7 +328,7 @@ describe('Server API', () => {
       id: 'agent-using-persona',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],

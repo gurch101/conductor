@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TeamCard } from '@/components/TeamCard';
 import type { Team } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 describe('TeamCard Component', () => {
   afterEach(() => {
@@ -53,7 +54,7 @@ describe('TeamCard Component', () => {
           id: 'a1',
           team_id: '1',
           description: 'A1',
-          status: 'done',
+          status: AgentStatus.Done,
           summary: 'done',
           tokensUsed: 0,
           input_schema: [],
@@ -66,7 +67,7 @@ describe('TeamCard Component', () => {
     expect(screen.getByText('Done')).toBeDefined();
   });
 
-  it("shows 'Action Needed' when an agent is waiting approval", () => {
+  it("shows 'Action Needed' when an agent is waiting for feedback", () => {
     const teamWithActionNeeded: Team = {
       ...mockTeam,
       agents: [
@@ -74,7 +75,7 @@ describe('TeamCard Component', () => {
           id: 'a1',
           team_id: '1',
           description: 'A1',
-          status: 'done',
+          status: AgentStatus.Done,
           summary: 'done',
           tokensUsed: 0,
           input_schema: [],
@@ -85,7 +86,7 @@ describe('TeamCard Component', () => {
           id: 'a2',
           team_id: '1',
           description: 'A2',
-          status: 'waiting_approval',
+          status: AgentStatus.WaitingForFeedback,
           summary: 'wait',
           tokensUsed: 0,
           input_schema: [],

@@ -14,6 +14,7 @@ import { AgentNode } from './AgentNode';
 import { GatewayNode } from './GatewayNode';
 import { StartNode } from './StartNode';
 import { EndNode } from './EndNode';
+import { AgentStatus } from '@/constants/agentStatus';
 import type { Team, Agent, Persona } from '../types';
 
 const nodeTypes = {
@@ -235,10 +236,10 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
           description: persona.description || persona.name,
           status:
             persona.name === 'Start'
-              ? 'done'
+              ? AgentStatus.Done
               : persona.name === 'End'
-                ? 'waiting_approval'
-                : 'working',
+                ? AgentStatus.Ready
+                : AgentStatus.Ready,
           summary:
             persona.name === 'Gateway'
               ? 'Route based on pass/fail outcomes.'

@@ -1,5 +1,6 @@
 import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
+import { AgentStatus } from '@/constants/agentStatus';
 
 export const teams = sqliteTable('teams', {
   id: text('id').primaryKey(),
@@ -22,7 +23,14 @@ export const agents = sqliteTable('agents', {
     .notNull()
     .references(() => teams.id, { onDelete: 'cascade' }),
   personaId: text('persona_id').references(() => personas.id, { onDelete: 'set null' }),
-  status: text('status', { enum: ['done', 'working', 'waiting_approval'] }).default('working'),
+  status: text('status', {
+    enum: [
+      AgentStatus.Done,
+      AgentStatus.Working,
+      AgentStatus.Ready,
+      AgentStatus.WaitingForFeedback,
+    ],
+  }).default(AgentStatus.Ready),
   summary: text('summary'),
   tokensUsed: integer('tokens_used').default(0),
   inputSchema: text('input_schema'),

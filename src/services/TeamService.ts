@@ -2,6 +2,7 @@ import { TeamRepository } from '@/repositories/TeamRepository';
 import { AgentRepository } from '@/repositories/AgentRepository';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
 import { PersonaRepository } from '@/repositories/PersonaRepository';
+import { AgentStatus } from '@/constants/agentStatus';
 import type { Team, Agent, DBTeam } from '@/types';
 
 /**
@@ -62,7 +63,7 @@ export class TeamService {
       persona_id: 'persona-start',
       persona_name: 'Start',
       description: 'Workflow entry point.',
-      status: 'done',
+      status: AgentStatus.Done,
       summary: 'Workflow entry point.',
       tokensUsed: 0,
       input_schema: [],
@@ -77,7 +78,7 @@ export class TeamService {
       persona_id: 'persona-end',
       persona_name: 'End',
       description: 'Workflow completion point.',
-      status: 'waiting_approval',
+      status: AgentStatus.Ready,
       summary: 'Workflow completion point.',
       tokensUsed: 0,
       input_schema: [],
@@ -208,10 +209,10 @@ export class TeamService {
     for (const agent of team.agents) {
       if (!reachable.has(agent.id)) continue;
       if (agent.id === startId) continue;
-      if (agent.status === 'done') continue;
+      if (agent.status === AgentStatus.Done) continue;
       const preds = incoming.get(agent.id) || [];
       if (preds.length === 0) continue;
-      const allDone = preds.every((id) => agentsById.get(id)?.status === 'done');
+      const allDone = preds.every((id) => agentsById.get(id)?.status === AgentStatus.Done);
       if (allDone) ready.push(agent);
     }
     return ready;
