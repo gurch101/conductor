@@ -10,6 +10,19 @@ import type { Team, Agent, DBTeam } from '@/types';
  * Service for managing teams and their associated agents and connections.
  */
 export class TeamService {
+  private static isSystemAgent(agent: Agent): boolean {
+    return (
+      agent.persona_id === 'persona-start' ||
+      agent.persona_id === 'persona-end' ||
+      agent.persona_id === 'persona-gateway' ||
+      agent.persona_name === 'Start' ||
+      agent.persona_name === 'End' ||
+      agent.persona_name === 'Gateway' ||
+      agent.id.startsWith('agent-start-') ||
+      agent.id.startsWith('agent-end-')
+    );
+  }
+
   /**
    * Retrieves all teams with their agents and connections fully hydrated.
    * @returns A list of hydrated teams.
@@ -235,6 +248,10 @@ export class TeamService {
     }
     if (endAgents.length !== 1) {
       throw new Error('Team must include exactly one End node.');
+    }
+    const activeAgents = team.agents.filter((a) => !this.isSystemAgent(a));
+    if (activeAgents.length === 0) {
+      throw new Error('Team must include at least one non-system agent.');
     }
 
     const agentIds = new Set(team.agents.map((a) => a.id));

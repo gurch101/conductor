@@ -14,6 +14,16 @@ import './index.css';
 
 type View = 'dashboard' | 'builder' | 'agent-chat' | 'team-chat';
 
+const isSystemAgent = (agent: Agent): boolean =>
+  agent.persona_id === 'persona-start' ||
+  agent.persona_id === 'persona-end' ||
+  agent.persona_id === 'persona-gateway' ||
+  agent.persona_name === 'Start' ||
+  agent.persona_name === 'End' ||
+  agent.persona_name === 'Gateway' ||
+  agent.id.startsWith('agent-start-') ||
+  agent.id.startsWith('agent-end-');
+
 export function App() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -138,6 +148,11 @@ export function App() {
 
     if (!name || name.trim() === '') {
       showError('Team name is required.');
+      return;
+    }
+    const hasActiveAgent = selectedTeam.agents.some((agent) => !isSystemAgent(agent));
+    if (!hasActiveAgent) {
+      showError('Team must include at least one non-system agent.');
       return;
     }
 

@@ -5,6 +5,22 @@ import type { Agent } from '@/types';
 import { AgentStatus } from '@/constants/agentStatus';
 
 describe('TeamService', () => {
+  const buildDeveloperAgent = (teamId: string): Agent => ({
+    id: `agent-dev-${crypto.randomUUID()}`,
+    team_id: teamId,
+    persona_id: 'persona-developer',
+    persona_name: 'Developer',
+    description: 'Takes requirements and implements features.',
+    status: AgentStatus.Working,
+    summary: 'Implement features.',
+    tokensUsed: 0,
+    input_schema: [],
+    output_schema: [],
+    logs: [],
+    pos_x: 300,
+    pos_y: 200,
+  });
+
   beforeAll(() => {
     initDb();
   });
@@ -17,7 +33,13 @@ describe('TeamService', () => {
 
     // 2. Update it
     const newName = 'Updated Team Name';
-    TeamService.updateTeam(team.id, newName);
+    const start = team.agents.find((a) => a.persona_name === 'Start')!;
+    const end = team.agents.find((a) => a.persona_name === 'End')!;
+    const dev = buildDeveloperAgent(team.id);
+    TeamService.updateTeam(team.id, newName, [start, dev, end], [
+      { source: start.id, target: dev.id },
+      { source: dev.id, target: end.id },
+    ]);
 
     // 3. Retrieve and verify
     const updatedTeam = TeamService.getTeamById(team.id);
@@ -51,8 +73,14 @@ describe('TeamService', () => {
 
   it('updateTeam should succeed if name is same for the same team', () => {
     const team = TeamService.createTeam('Same Name');
+    const start = team.agents.find((a) => a.persona_name === 'Start')!;
+    const end = team.agents.find((a) => a.persona_name === 'End')!;
+    const dev = buildDeveloperAgent(team.id);
     // This should NOT throw
-    TeamService.updateTeam(team.id, 'Same Name');
+    TeamService.updateTeam(team.id, 'Same Name', [start, dev, end], [
+      { source: start.id, target: dev.id },
+      { source: dev.id, target: end.id },
+    ]);
     const updated = TeamService.getTeamById(team.id);
     expect(updated?.name).toBe('Same Name');
   });
@@ -94,8 +122,41 @@ describe('TeamService', () => {
 
   it('updateTeam should reject teams without a Start-to-End path', () => {
     const team = TeamService.createTeam('No Path');
-    expect(() => TeamService.updateTeam(team.id, team.name, team.agents, [])).toThrow(
+    const start = team.agents.find((a) => a.persona_name === 'Start')!;
+    const end = team.agents.find((a) => a.persona_name === 'End')!;
+    const dev = buildDeveloperAgent(team.id);
+    expect(() => TeamService.updateTeam(team.id, team.name, [start, dev, end], [])).toThrow(
       'A valid path from Start to End is required.'
+    );
+  });
+
+  it('updateTeam should reject teams with only system nodes', () => {
+    const team = TeamService.createTeam('System Only Team');
+    const start = team.agents.find((a) => a.persona_name === 'Start')!;
+    const end = team.agents.find((a) => a.persona_name === 'End')!;
+    const gateway: Agent = {
+      id: `agent-gateway-${crypto.randomUUID()}`,
+      team_id: team.id,
+      persona_id: 'persona-gateway',
+      persona_name: 'Gateway',
+      description: 'Route based on pass/fail outcomes.',
+      status: AgentStatus.Ready,
+      summary: 'Route based on pass/fail outcomes.',
+      tokensUsed: 0,
+      input_schema: [],
+      output_schema: [],
+      logs: [],
+      pos_x: 320,
+      pos_y: 200,
+    };
+    const agents = [start, gateway, end];
+    const connections = [
+      { source: start.id, target: gateway.id },
+      { source: gateway.id, target: end.id },
+    ];
+
+    expect(() => TeamService.updateTeam(team.id, team.name, agents, connections)).toThrow(
+      'Team must include at least one non-system agent.'
     );
   });
 
@@ -104,21 +165,7 @@ describe('TeamService', () => {
     const start = team.agents.find((a) => a.persona_name === 'Start')!;
     const end = team.agents.find((a) => a.persona_name === 'End')!;
 
-    const dev: Agent = {
-      id: `agent-dev-${crypto.randomUUID()}`,
-      team_id: team.id,
-      persona_id: 'persona-developer',
-      persona_name: 'Developer',
-      description: 'Takes requirements and implements features.',
-      status: AgentStatus.Working,
-      summary: 'Implement features.',
-      tokensUsed: 0,
-      input_schema: [],
-      output_schema: [],
-      logs: [],
-      pos_x: 300,
-      pos_y: 200,
-    };
+    const dev = buildDeveloperAgent(team.id);
 
     const agents = [start, dev, end];
     const connections = [
