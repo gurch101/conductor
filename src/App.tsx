@@ -401,15 +401,6 @@ export function App() {
             >
               <ArrowLeft size={16} /> Back
             </button>
-            <button
-              onClick={() => {
-                setCurrentView('builder');
-                setIsNewTeam(false);
-              }}
-              className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-medium transition-colors"
-            >
-              Open Builder
-            </button>
           </div>
         ) : currentView === 'dashboard' ? (
           <button
