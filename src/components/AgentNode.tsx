@@ -56,7 +56,7 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
             <button
               onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
               className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-              title="Delete Agent"
+              title="Delete Team Member"
             >
               <Trash2 size={10} />
             </button>

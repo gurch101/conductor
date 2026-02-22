@@ -49,7 +49,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Agent Status & Info */}
+        {/* Left: Team Member Status & Info */}
         <div className="w-80 border-r border-slate-800 bg-slate-900/10 p-6 space-y-6 hidden lg:block overflow-y-auto">
           <div>
             <label className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-2 block">
@@ -66,8 +66,8 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
               <span className="text-xs font-bold uppercase tracking-wider">Approval Required</span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              The agent has flagged a potential issue or reached a decision point that requires
-              human oversight before proceeding.
+              The team member has flagged a potential issue or reached a decision point that
+              requires human oversight before proceeding.
             </p>
           </div>
 
@@ -88,7 +88,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ team, agent, onBack, onApp
         <div className="flex-1 flex flex-col bg-slate-950">
           <div className="flex-1 overflow-y-auto p-6 space-y-4 font-mono">
             <div className="text-[10px] text-slate-600 text-center uppercase tracking-widest mb-8">
-              — Agent Execution Log —
+              — Team Member Execution Log —
             </div>
 
             {agent.logs.map((log, i) => (

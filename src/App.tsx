@@ -71,10 +71,10 @@ export function App() {
   const handleAddTeam = async () => {
     try {
       // Try to create with a unique name by checking existing names
-      let name = 'New Agent Team';
+      let name = 'New Team';
       let counter = 1;
       while (teams.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
-        name = `New Agent Team ${++counter}`;
+        name = `New Team ${++counter}`;
       }
 
       const response = await fetch('/api/teams', {
@@ -429,7 +429,7 @@ export function App() {
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2">Team Dashboard</h2>
                   <p className="text-slate-400">
-                    Manage and monitor your multi-agent orchestration workflows.
+                    Manage and monitor your team orchestration workflows.
                   </p>
                 </div>
               </div>
@@ -474,8 +474,8 @@ export function App() {
           message={
             <>
               This will permanently remove{' '}
-              <strong>{teams.find((t) => t.id === teamToDelete)?.name}</strong> and all its agents,
-              connections, and logs. This action cannot be undone.
+              <strong>{teams.find((t) => t.id === teamToDelete)?.name}</strong> and all its team
+              members, connections, and logs. This action cannot be undone.
             </>
           }
           onConfirm={handleDeleteTeam}
@@ -547,7 +547,9 @@ export function App() {
         <footer className="h-10 border-t border-slate-800 px-6 flex items-center justify-between bg-slate-950 text-[10px] text-slate-600 shrink-0">
           <div className="flex gap-4">
             <span>SYSTEM: ONLINE</span>
-            <span>AGENTS ACTIVE: {teams.reduce((a, b) => a + (b.agents?.length || 0), 0)}</span>
+            <span>
+              TEAM MEMBERS ACTIVE: {teams.reduce((a, b) => a + (b.agents?.length || 0), 0)}
+            </span>
           </div>
           <div>v0.1.0-alpha</div>
         </footer>

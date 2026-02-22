@@ -1,5 +1,15 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Send, ShieldAlert, Circle, CheckCircle2, Loader2, Bot } from 'lucide-react';
+import {
+  ArrowLeft,
+  Send,
+  ShieldAlert,
+  Circle,
+  CheckCircle2,
+  Loader2,
+  Bot,
+  Pause,
+  Play,
+} from 'lucide-react';
 import type { Team } from '../types';
 import { AgentStatus } from '@/constants/agentStatus';
 
@@ -21,6 +31,7 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
   const [response, setResponse] = useState('');
   const [focusedAgentId, setFocusedAgentId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
+  const [pausedAgents, setPausedAgents] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const activeAgents = useMemo(
@@ -39,6 +50,10 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
 
   const workingAgent = useMemo(
     () => activeAgents.find((a) => a.status === AgentStatus.Working) || null,
+    [activeAgents]
+  );
+  const isAnyWorking = useMemo(
+    () => activeAgents.some((a) => a.status === AgentStatus.Working),
     [activeAgents]
   );
   const waitingAgents = useMemo(
@@ -69,12 +84,14 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
       agentName: focusedAgent.persona_name || focusedAgent.description,
       status: focusedAgent.status,
       message,
+      isUser: message.startsWith('Human response:'),
     }));
   }, [focusedAgent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!response.trim() || isSending) return;
+    if (isAnyWorking) return;
     if (!isStarted) {
       setIsSending(true);
       try {
@@ -110,14 +127,16 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
         <div className="text-xs text-slate-400 hidden sm:flex items-center gap-2">
           <Bot size={14} />
           {workingAgent
-            ? `Working: ${workingAgent.persona_name || workingAgent.description}`
+            ? `Active: ${workingAgent.persona_name || workingAgent.description}`
             : 'Idle'}
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         <aside className="w-80 border-r border-slate-800 bg-slate-900/20 p-4 overflow-y-auto hidden lg:block">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Agents</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+            Team Members
+          </h3>
           <div className="space-y-2">
             {activeAgents.map((agent) => {
               const label =
@@ -128,6 +147,7 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
                     : agent.status === AgentStatus.Working
                       ? 'Working'
                       : 'Ready';
+              const isPaused = pausedAgents.has(agent.id);
               return (
                 <div
                   key={agent.id}
@@ -142,9 +162,30 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
                     <p className="text-sm text-slate-200 truncate">
                       {agent.persona_name || agent.description}
                     </p>
-                    <span className="text-[10px] text-slate-500">{label}</span>
+                    <span className="text-[10px] text-slate-500">
+                      {isPaused ? 'Paused' : label}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2">{agent.summary}</p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPausedAgents((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(agent.id)) {
+                          next.delete(agent.id);
+                        } else {
+                          next.add(agent.id);
+                        }
+                        return next;
+                      });
+                    }}
+                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    {isPaused ? <Play size={12} /> : <Pause size={12} />}
+                    {isPaused ? 'Resume' : 'Pause'}
+                  </button>
                 </div>
               );
             })}
@@ -155,7 +196,7 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
               <ShieldAlert size={14} /> Pending Requests
             </div>
             <p className="text-xs text-slate-300">
-              {waitingAgents.length} agent(s) waiting for your input.
+              {waitingAgents.length} team member(s) waiting for your input.
             </p>
           </div>
         </aside>
@@ -165,7 +206,7 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
             {focusedTimeline.length === 0 && (
               <div className="text-xs text-slate-500">
                 {focusedAgent
-                  ? 'No activity yet for this agent.'
+                  ? 'No activity yet for this team member.'
                   : isStarted
                     ? 'No activity yet.'
                     : 'Enter an initial goal to start orchestration.'}
@@ -186,20 +227,26 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
                     : event.status === AgentStatus.Working
                       ? 'text-blue-400'
                       : 'text-cyan-400';
+              const messageClass = event.isUser
+                ? 'border-blue-500/40 bg-blue-500/10'
+                : 'border-slate-800 bg-slate-900/40';
+              const messageLabel = event.isUser ? 'You' : event.agentName;
+              const displayMessage = event.isUser
+                ? event.message.replace(/^Human response:\s*/i, '')
+                : event.message;
 
               return (
-                <div
-                  key={event.id}
-                  className="rounded-lg border border-slate-800 bg-slate-900/40 p-3"
-                >
+                <div key={event.id} className={`rounded-lg border p-3 ${messageClass}`}>
                   <div className="text-[10px] text-slate-500 mb-2 flex items-center justify-between">
-                    <span>{event.agentName}</span>
-                    <span className={`inline-flex items-center gap-1 ${statusClass}`}>
-                      <StatusIcon size={11} />
-                      {event.status}
-                    </span>
+                    <span>{messageLabel}</span>
+                    {!event.isUser && (
+                      <span className={`inline-flex items-center gap-1 ${statusClass}`}>
+                        <StatusIcon size={11} />
+                        {event.status}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-slate-300">{event.message}</p>
+                  <p className="text-xs text-slate-300 whitespace-pre-wrap">{displayMessage}</p>
                 </div>
               );
             })}
@@ -211,11 +258,11 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
               <div className="text-[11px] text-slate-500">
                 {isStarted ? (
                   <>
-                    Focused agent:{' '}
+                    Focused team member:{' '}
                     <span className="text-slate-300">
                       {focusedAgent
                         ? focusedAgent.persona_name || focusedAgent.description
-                        : 'Select an agent from the left panel'}
+                        : 'Select a team member from the left panel'}
                     </span>
                   </>
                 ) : (
@@ -224,20 +271,29 @@ export const TeamOrchestrationChat: React.FC<TeamOrchestrationChatProps> = ({
               </div>
 
               <div className="relative">
-                <input
-                  type="text"
+                <textarea
                   value={response}
                   onChange={(e) => setResponse(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleSubmit(e);
+                    }
+                  }}
+                  rows={5}
                   placeholder={
                     isStarted
                       ? 'Reply with clarifications, decisions, or access approvals...'
                       : 'Describe the initial goal to kick off the team...'
                   }
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-3 pr-10 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-3 pr-10 text-sm text-white focus:outline-none focus:border-blue-500 min-h-[7.5rem] resize-none"
+                  disabled={isSending || isAnyWorking}
                 />
                 <button
                   type="submit"
-                  disabled={!response.trim() || (isStarted && !focusedAgentId) || isSending}
+                  disabled={
+                    !response.trim() || (isStarted && !focusedAgentId) || isSending || isAnyWorking
+                  }
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 disabled:text-slate-700"
                 >
                   {isSending ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}

@@ -38,10 +38,20 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdi
     };
   }, [showMenu]);
 
-  const allDone = team.agents.length > 0 && team.agents.every((a) => a.status === AgentStatus.Done);
-  const hasYellow = team.agents.some((a) => a.status === AgentStatus.WaitingForFeedback);
-  const hasWorking = team.agents.some((a) => a.status === AgentStatus.Working);
-  const hasReady = team.agents.some((a) => a.status === AgentStatus.Ready);
+  const visibleAgents = team.agents.filter(
+    (agent) =>
+      agent.persona_name !== 'Start' &&
+      agent.persona_name !== 'End' &&
+      agent.persona_name !== 'Gateway' &&
+      agent.persona_id !== 'persona-start' &&
+      agent.persona_id !== 'persona-end' &&
+      agent.persona_id !== 'persona-gateway'
+  );
+  const allDone =
+    visibleAgents.length > 0 && visibleAgents.every((a) => a.status === AgentStatus.Done);
+  const hasYellow = visibleAgents.some((a) => a.status === AgentStatus.WaitingForFeedback);
+  const hasWorking = visibleAgents.some((a) => a.status === AgentStatus.Working);
+  const hasReady = visibleAgents.some((a) => a.status === AgentStatus.Ready);
 
   let statusColor = 'border-slate-700 bg-slate-800/50 text-slate-500';
   let StatusIcon = PlayCircle;
@@ -55,20 +65,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdi
   } else if (hasWorking) {
     statusColor = 'border-blue-500 bg-blue-500/10 text-blue-400';
     StatusIcon = PlayCircle;
-  } else if (hasReady || team.agents.length > 0) {
+  } else if (hasReady || visibleAgents.length === 0) {
     statusColor = 'border-emerald-500 bg-emerald-500/10 text-emerald-400';
     StatusIcon = PlayCircle;
   }
 
-  const visibleAgents = team.agents.filter(
-    (agent) =>
-      agent.persona_name !== 'Start' &&
-      agent.persona_name !== 'End' &&
-      agent.persona_name !== 'Gateway' &&
-      agent.persona_id !== 'persona-start' &&
-      agent.persona_id !== 'persona-end' &&
-      agent.persona_id !== 'persona-gateway'
-  );
   const totalTokens = team.agents.reduce((acc, curr) => acc + curr.tokensUsed, 0);
   const cost = ((totalTokens / 1000) * 0.02).toFixed(2);
 
@@ -135,7 +136,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdi
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Users size={16} className="text-slate-600" />
-            <span>{visibleAgents.length} Agents</span>
+            <span>{visibleAgents.length} Team Members</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Coins size={16} className="text-slate-600" />
@@ -148,10 +149,10 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onPlay, onEdi
             onPlay(team);
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600/30 hover:text-blue-200 transition-colors text-[11px] font-semibold"
-          aria-label={`Start ${team.name}`}
+          aria-label={`${hasYellow ? 'Resume' : 'Start'} ${team.name}`}
         >
           <PlayCircle size={14} />
-          <span>Start</span>
+          <span>{hasYellow ? 'Resume' : 'Start'}</span>
         </button>
       </div>
     </div>
