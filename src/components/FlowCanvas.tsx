@@ -167,7 +167,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
         console.error('Failed to delete connections:', error);
       }
     },
-    [team.id, edges, nodes, syncChanges]
+    [edges, nodes, syncChanges]
   );
 
   const onConnect = useCallback(

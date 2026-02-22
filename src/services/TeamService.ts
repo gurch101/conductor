@@ -109,6 +109,8 @@ export class TeamService {
    * @param id The ID of the team.
    * @param name The new name.
    * @param objective The new objective.
+   * @param agents
+   * @param connections
    * @throws Error if the name is empty or already exists for another team.
    */
   static updateTeam(
@@ -116,7 +118,12 @@ export class TeamService {
     name: string,
     objective: string,
     agents?: Agent[],
-    connections?: { source: string; source_handle?: string; target: string; target_handle?: string }[]
+    connections?: {
+      source: string;
+      source_handle?: string;
+      target: string;
+      target_handle?: string;
+    }[]
   ): void {
     if (!name || name.trim() === '') {
       throw new Error('Team name is required.');
@@ -160,6 +167,11 @@ export class TeamService {
     return this.computeNextAgents(team);
   }
 
+  /**
+   * Computes the next agents ready to begin work for a team.
+   * @param team The team to evaluate.
+   * @returns A list of ready agents in the workflow.
+   */
   private static computeNextAgents(team: Team): Agent[] {
     const startAgents = team.agents.filter(
       (a) => a.persona_name === 'Start' || a.persona_id === 'persona-start'
@@ -205,6 +217,10 @@ export class TeamService {
     return ready;
   }
 
+  /**
+   * Validates that a team has exactly one Start and End node and a valid path between them.
+   * @param team The team to validate.
+   */
   private static ensureStartEndAndPath(team: Team): void {
     const startAgents = team.agents.filter(
       (a) => a.persona_name === 'Start' || a.persona_id === 'persona-start'
@@ -250,6 +266,11 @@ export class TeamService {
     }
   }
 
+  /**
+   * Reconciles agent records for a team with the provided list.
+   * @param teamId The team ID.
+   * @param agents The desired list of agents.
+   */
   private static syncAgents(teamId: string, agents: Agent[]): void {
     const existing = AgentRepository.findByTeamId(teamId);
     const existingIds = new Set(existing.map((a) => a.id));
@@ -270,9 +291,19 @@ export class TeamService {
     }
   }
 
+  /**
+   * Replaces all connections for a team with the provided list.
+   * @param teamId The team ID.
+   * @param connections The desired list of connections.
+   */
   private static syncConnections(
     teamId: string,
-    connections: { source: string; source_handle?: string; target: string; target_handle?: string }[]
+    connections: {
+      source: string;
+      source_handle?: string;
+      target: string;
+      target_handle?: string;
+    }[]
   ): void {
     ConnectionRepository.replaceForTeam(teamId, connections);
   }
