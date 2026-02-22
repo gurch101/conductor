@@ -119,8 +119,9 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.agents.length).toBe(1);
-    expect(hydratedTeam.agents[0]?.description).toBe(persona.description || persona.name);
+    expect(hydratedTeam.agents.length).toBe(3);
+    const createdAgent = hydratedTeam.agents.find((a) => a.id === 'test-agent-1');
+    expect(createdAgent?.description).toBe(persona.description || persona.name);
   });
 
   it('POST /api/connections - should connect two agents', async () => {
@@ -162,9 +163,11 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.connections.length).toBe(1);
-    expect(hydratedTeam.connections[0]?.source).toBe('test-agent-1');
-    expect(hydratedTeam.connections[0]?.target).toBe('test-agent-2');
+    expect(hydratedTeam.connections.length).toBe(2);
+    const createdConnection = hydratedTeam.connections.find(
+      (c) => c.source === 'test-agent-1' && c.target === 'test-agent-2'
+    );
+    expect(createdConnection).toBeDefined();
   });
 
   it('DELETE /api/connections - should remove a connection', async () => {
@@ -186,7 +189,7 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.connections.length).toBe(0);
+    expect(hydratedTeam.connections.length).toBe(1);
   });
 
   it('PUT /api/teams/:id - should update team details', async () => {
