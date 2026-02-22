@@ -11,10 +11,24 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { AgentNode } from './AgentNode';
+import { GatewayNode } from './GatewayNode';
+import { StartNode } from './StartNode';
+import { EndNode } from './EndNode';
+import { AgentStatus } from '@/constants/agentStatus';
 import type { Team, Agent, Persona } from '../types';
 
 const nodeTypes = {
   agent: AgentNode,
+  gateway: GatewayNode,
+  start: StartNode,
+  end: EndNode,
+};
+
+const getNodeType = (agent: Agent) => {
+  if (agent.persona_name === 'Gateway' || agent.persona_id === 'persona-gateway') return 'gateway';
+  if (agent.persona_name === 'Start' || agent.persona_id === 'persona-start') return 'start';
+  if (agent.persona_name === 'End' || agent.persona_id === 'persona-end') return 'end';
+  return 'agent';
 };
 
 interface FlowCanvasProps {
@@ -29,7 +43,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
   // Convert agents to nodes
   const initialNodes: Node[] = (team.agents || []).map((agent) => ({
     id: agent.id,
-    type: 'agent',
+    type: getNodeType(agent),
     position: { x: agent.pos_x || 250, y: agent.pos_y || 200 },
     data: agent,
   }));
@@ -54,12 +68,19 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
   const onNodesDelete = useCallback(
     async (deleted: Node[]) => {
       try {
-        const idsToDelete = deleted.map((n) => n.id);
-
-        // Delete from backend
-        await Promise.all(
-          idsToDelete.map((id) => fetch(`/api/agents/${id}`, { method: 'DELETE' }))
+        const protectedIds = new Set(
+          (team.agents || [])
+            .filter(
+              (a) =>
+                a.persona_name === 'Start' ||
+                a.persona_name === 'End' ||
+                a.persona_id === 'persona-start' ||
+                a.persona_id === 'persona-end'
+            )
+            .map((a) => a.id)
         );
+        const idsToDelete = deleted.map((n) => n.id).filter((id) => !protectedIds.has(id));
+        if (idsToDelete.length === 0) return;
 
         // Sync with parent state
         const updatedAgents = team.agents.filter((a) => !idsToDelete.includes(a.id));
@@ -140,22 +161,6 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
   const onEdgesDelete = useCallback(
     async (deleted: Edge[]) => {
       try {
-        await Promise.all(
-          deleted.map((edge) =>
-            fetch('/api/connections', {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                team_id: team.id,
-                source_id: edge.source,
-                source_handle: edge.sourceHandle || null,
-                target_id: edge.target,
-                target_handle: edge.targetHandle || null,
-              }),
-            })
-          )
-        );
-
         const deletedIds = new Set(deleted.map((edge) => edge.id));
         const remainingEdges = edges.filter((edge) => !deletedIds.has(edge.id));
         syncChanges(nodes, remainingEdges);
@@ -163,7 +168,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
         console.error('Failed to delete connections:', error);
       }
     },
-    [team.id, edges, nodes, syncChanges]
+    [edges, nodes, syncChanges]
   );
 
   const onConnect = useCallback(
@@ -229,8 +234,20 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
           persona_id: persona.id,
           persona_name: persona.name,
           description: persona.description || persona.name,
-          status: 'working',
-          summary: `Newly created ${persona.name} agent.`,
+          status:
+            persona.name === 'Start'
+              ? AgentStatus.Done
+              : persona.name === 'End'
+                ? AgentStatus.Ready
+                : AgentStatus.Ready,
+          summary:
+            persona.name === 'Gateway'
+              ? 'Route based on pass/fail outcomes.'
+              : persona.name === 'Start'
+                ? 'Workflow entry point.'
+                : persona.name === 'End'
+                  ? 'Workflow completion point.'
+                  : persona.description || persona.name,
           tokensUsed: 0,
           input_schema: [],
           output_schema: [],
@@ -241,7 +258,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
 
         const newNode: Node = {
           id: newAgent.id,
-          type: 'agent',
+          type: getNodeType(newAgent),
           position,
           data: newAgent,
         };

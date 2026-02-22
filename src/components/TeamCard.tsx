@@ -9,6 +9,7 @@ import {
   MoreVertical,
   Trash2,
 } from 'lucide-react';
+import { AgentStatus } from '@/constants/agentStatus';
 
 interface TeamCardProps {
   team: Team;
@@ -34,9 +35,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, onClick, onDelete }) =
     };
   }, [showMenu]);
 
-  const allDone = team.agents.length > 0 && team.agents.every((a) => a.status === 'done');
-  const hasYellow = team.agents.some((a) => a.status === 'waiting_approval');
-  const hasWorking = team.agents.some((a) => a.status === 'working');
+  const allDone = team.agents.length > 0 && team.agents.every((a) => a.status === AgentStatus.Done);
+  const hasYellow = team.agents.some((a) => a.status === AgentStatus.WaitingForFeedback);
+  const hasWorking = team.agents.some(
+    (a) => a.status === AgentStatus.Working || a.status === AgentStatus.Ready
+  );
 
   let statusColor = 'border-slate-700 bg-slate-800/50 text-slate-500';
   let StatusIcon = PlayCircle;

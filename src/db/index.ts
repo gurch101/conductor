@@ -58,6 +58,48 @@ export function initDb() {
       description: 'Builds and operates deployment and runtime workflows.',
       skill: 'devops-engineering',
     },
+    {
+      id: 'persona-code-reviewer',
+      name: 'Code Reviewer',
+      avatar: '🔍',
+      description: 'Reviews code changes for correctness, style, and maintainability.',
+      skill: 'code-reviewer',
+    },
+    {
+      id: 'persona-architecture-reviewer',
+      name: 'Architecture Reviewer',
+      avatar: '🧭',
+      description: 'Evaluates system design for scalability, reliability, and clarity.',
+      skill: 'architecture-reviewer',
+    },
+    {
+      id: 'persona-security-reviewer',
+      name: 'Security Reviewer',
+      avatar: '🛡️',
+      description: 'Assesses security risks, controls, and compliance concerns.',
+      skill: 'security-reviewer',
+    },
+    {
+      id: 'persona-gateway',
+      name: 'Gateway',
+      avatar: '🔀',
+      description: 'Routes flow based on pass/fail outcomes.',
+      skill: 'gateway',
+    },
+    {
+      id: 'persona-start',
+      name: 'Start',
+      avatar: '🟢',
+      description: 'Workflow entry point.',
+      skill: 'start',
+    },
+    {
+      id: 'persona-end',
+      name: 'End',
+      avatar: '🏁',
+      description: 'Workflow completion point.',
+      skill: 'end',
+    },
   ];
 
   for (const persona of defaultPersonas) {

@@ -7,6 +7,7 @@ import { PersonaSidebar } from './components/PersonaSidebar';
 import { AgentChat } from './components/AgentChat';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { Plus, ArrowLeft } from 'lucide-react';
+import { AgentStatus } from './constants/agentStatus';
 import './index.css';
 
 type View = 'dashboard' | 'builder' | 'agent-chat';
@@ -48,7 +49,9 @@ export function App() {
   const handleTeamClick = (team: Team) => {
     setSelectedTeam(team);
     setIsNewTeam(false);
-    const agentNeedingAttention = team.agents.find((a) => a.status === 'waiting_approval');
+    const agentNeedingAttention = team.agents.find(
+      (a) => a.status === AgentStatus.WaitingForFeedback
+    );
     if (agentNeedingAttention) {
       setSelectedAgent(agentNeedingAttention);
       setCurrentView('agent-chat');
@@ -142,7 +145,12 @@ export function App() {
       const response = await fetch(`/api/teams/${selectedTeam.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, objective }),
+        body: JSON.stringify({
+          name,
+          objective,
+          agents: selectedTeam.agents,
+          connections: selectedTeam.connections,
+        }),
       });
 
       if (!response.ok) {
@@ -169,7 +177,11 @@ export function App() {
       ...selectedTeam,
       agents: selectedTeam.agents.map((a) =>
         a.id === agentId
-          ? { ...a, status: 'done' as const, logs: [...a.logs, 'User approved execution.'] }
+          ? {
+              ...a,
+              status: AgentStatus.Done,
+              logs: [...a.logs, 'User approved execution.'],
+            }
           : a
       ),
     };

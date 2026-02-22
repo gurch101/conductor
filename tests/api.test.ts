@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'bun:test';
 import { appOptions } from '@/index';
 import { initDb } from '@/db';
 import type { Team, Persona } from '@/types';
+import { AgentStatus } from '@/constants/agentStatus';
 
 type RouteHandler = (
   req?: Request & { params?: Record<string, string> }
@@ -102,7 +103,7 @@ describe('Server API', () => {
       id: 'test-agent-1',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Testing agent creation',
       tokensUsed: 0,
       input_schema: [],
@@ -119,8 +120,9 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.agents.length).toBe(1);
-    expect(hydratedTeam.agents[0]?.description).toBe(persona.description || persona.name);
+    expect(hydratedTeam.agents.length).toBe(3);
+    const createdAgent = hydratedTeam.agents.find((a) => a.id === 'test-agent-1');
+    expect(createdAgent?.description).toBe(persona.description || persona.name);
   });
 
   it('POST /api/connections - should connect two agents', async () => {
@@ -136,7 +138,7 @@ describe('Server API', () => {
       id: 'test-agent-2',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: 'Second agent',
       tokensUsed: 0,
       input_schema: [],
@@ -162,9 +164,11 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.connections.length).toBe(1);
-    expect(hydratedTeam.connections[0]?.source).toBe('test-agent-1');
-    expect(hydratedTeam.connections[0]?.target).toBe('test-agent-2');
+    expect(hydratedTeam.connections.length).toBe(2);
+    const createdConnection = hydratedTeam.connections.find(
+      (c) => c.source === 'test-agent-1' && c.target === 'test-agent-2'
+    );
+    expect(createdConnection).toBeDefined();
   });
 
   it('DELETE /api/connections - should remove a connection', async () => {
@@ -186,7 +190,7 @@ describe('Server API', () => {
       params: Record<string, string>;
     });
     const hydratedTeam = (await teamRes.json()) as Team;
-    expect(hydratedTeam.connections.length).toBe(0);
+    expect(hydratedTeam.connections.length).toBe(1);
   });
 
   it('PUT /api/teams/:id - should update team details', async () => {
@@ -240,7 +244,7 @@ describe('Server API', () => {
     await callPost('/api/agents', {
       id: agentId,
       team_id: team.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],
@@ -271,7 +275,7 @@ describe('Server API', () => {
     await callPost('/api/agents', {
       id: agentId,
       team_id: team.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],
@@ -324,7 +328,7 @@ describe('Server API', () => {
       id: 'agent-using-persona',
       team_id: team.id,
       persona_id: persona.id,
-      status: 'working',
+      status: AgentStatus.Working,
       summary: '...',
       tokensUsed: 0,
       input_schema: [],

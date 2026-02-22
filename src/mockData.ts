@@ -1,4 +1,5 @@
 import type { Team } from './types';
+import { AgentStatus } from './constants/agentStatus';
 
 export const MOCK_TEAMS: Team[] = [
   {
@@ -10,7 +11,7 @@ export const MOCK_TEAMS: Team[] = [
         id: 'agent-1',
         team_id: '1',
         description: 'Researcher',
-        status: 'done',
+        status: AgentStatus.Done,
         summary: 'Gathered key facts about Quantum Bits and Superposition.',
         tokensUsed: 1200,
         input_schema: [],
@@ -25,7 +26,7 @@ export const MOCK_TEAMS: Team[] = [
         id: 'agent-2',
         team_id: '1',
         description: 'Writer',
-        status: 'working',
+        status: AgentStatus.Working,
         summary: 'Drafting the introduction and main sections.',
         tokensUsed: 800,
         input_schema: [],
@@ -44,7 +45,7 @@ export const MOCK_TEAMS: Team[] = [
         id: 'agent-3',
         team_id: '2',
         description: 'Linter',
-        status: 'done',
+        status: AgentStatus.Done,
         summary: 'Checked for syntax errors and style violations.',
         tokensUsed: 400,
         input_schema: [],
@@ -55,7 +56,7 @@ export const MOCK_TEAMS: Team[] = [
         id: 'agent-4',
         team_id: '2',
         description: 'Security Auditor',
-        status: 'waiting_approval',
+        status: AgentStatus.WaitingForFeedback,
         summary: 'Flagged a potential ReDoS in the email regex.',
         tokensUsed: 650,
         input_schema: [],
@@ -74,7 +75,7 @@ export const MOCK_TEAMS: Team[] = [
         id: 'agent-5',
         team_id: '3',
         description: 'DevOps',
-        status: 'done',
+        status: AgentStatus.Done,
         summary: 'Prepared the staging environment.',
         tokensUsed: 300,
         input_schema: [],

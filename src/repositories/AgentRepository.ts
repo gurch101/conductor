@@ -77,4 +77,24 @@ export class AgentRepository {
   static updatePosition(id: string, posX: number, posY: number): void {
     db.update(agents).set({ posX, posY }).where(eq(agents.id, id)).run();
   }
+
+  /**
+   * Updates an agent's persisted fields.
+   * @param agent The agent data to persist.
+   */
+  static update(agent: Agent): void {
+    db.update(agents)
+      .set({
+        personaId: agent.persona_id || null,
+        status: agent.status,
+        summary: agent.summary || '',
+        tokensUsed: agent.tokensUsed || 0,
+        inputSchema: JSON.stringify(agent.input_schema || []),
+        outputSchema: JSON.stringify(agent.output_schema || []),
+        posX: agent.pos_x || 0,
+        posY: agent.pos_y || 0,
+      })
+      .where(eq(agents.id, agent.id))
+      .run();
+  }
 }

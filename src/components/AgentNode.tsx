@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
 import type { Agent } from '../types';
-import { Coins, Terminal, Pause, Play, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Coins, Terminal, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { AgentStatus } from '@/constants/agentStatus';
+import type { AgentStatusValue } from '@/constants/agentStatus';
 
 interface AgentNodeProps {
   data: Agent;
@@ -11,11 +13,17 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
   const [showLogs, setShowLogs] = useState(false);
   const { deleteElements } = useReactFlow();
   const cost = ((data.tokensUsed / 1000) * 0.02).toFixed(3);
+  const isProtectedNode =
+    data.persona_name === 'Start' ||
+    data.persona_name === 'End' ||
+    data.persona_id === 'persona-start' ||
+    data.persona_id === 'persona-end';
 
-  const statusColors = {
-    done: 'bg-green-500',
-    working: 'bg-blue-500',
-    waiting_approval: 'bg-yellow-500',
+  const statusColors: Record<AgentStatusValue, string> = {
+    [AgentStatus.Done]: 'bg-green-500',
+    [AgentStatus.Working]: 'bg-blue-500',
+    [AgentStatus.Ready]: 'bg-cyan-500',
+    [AgentStatus.WaitingForFeedback]: 'bg-yellow-500',
   };
 
   return (
@@ -44,28 +52,23 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
           <div className="flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-[9px] text-slate-400 shrink-0">
             <Coins size={8} className="text-yellow-500" />${cost}
           </div>
-          <button
-            onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
-            className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
-            title="Delete Agent"
-          >
-            <Trash2 size={10} />
-          </button>
+          {!isProtectedNode && (
+            <button
+              onClick={() => deleteElements({ nodes: [{ id: data.id }] })}
+              className="opacity-0 group-hover/node:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-all"
+              title="Delete Agent"
+            >
+              <Trash2 size={10} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Body */}
       <div className="p-2">
-        <p className="text-[10px] text-slate-400 leading-tight mb-2 line-clamp-2">{data.summary}</p>
-
-        <div className="flex gap-1.5">
-          <button className="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded bg-slate-800 hover:bg-slate-750 text-[9px] font-medium transition-colors border border-slate-700">
-            <Pause size={8} /> Pause
-          </button>
-          <button className="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded bg-slate-800 hover:bg-slate-750 text-[9px] font-medium transition-colors border border-slate-700">
-            <Play size={8} /> Resume
-          </button>
-        </div>
+        <p className="text-[10px] text-slate-400 leading-tight line-clamp-2">
+          {data.summary || data.description}
+        </p>
       </div>
 
       {/* Logs Section */}
