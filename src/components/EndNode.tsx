@@ -16,9 +16,7 @@ export const EndNode: React.FC<EndNodeProps> = React.memo(({ data }) => {
       />
 
       <div className="p-2 border-b border-slate-800 bg-amber-900/20">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
-          End
-        </div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-amber-300">End</div>
         <div className="text-[10px] text-amber-400/70 mt-1">
           {data.summary || 'Workflow completion point.'}
         </div>

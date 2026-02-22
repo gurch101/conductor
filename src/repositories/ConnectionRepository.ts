@@ -80,6 +80,7 @@ export class ConnectionRepository {
    * Replaces all connections for a team.
    * @param teamId The ID of the team.
    * @param connections The new connections list.
+   * @param nextConnections
    */
   static replaceForTeam(
     teamId: string,

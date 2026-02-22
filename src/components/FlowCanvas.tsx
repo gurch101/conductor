@@ -246,7 +246,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
                 ? 'Workflow entry point.'
                 : persona.name === 'End'
                   ? 'Workflow completion point.'
-                  : `Newly created ${persona.name} agent.`,
+                  : persona.description || persona.name,
           tokensUsed: 0,
           input_schema: [],
           output_schema: [],

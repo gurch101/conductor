@@ -78,9 +78,7 @@ describe('TeamService', () => {
     const end = team.agents.find((a) => a.persona_name === 'End');
     expect(start).toBeDefined();
     expect(end).toBeDefined();
-    expect(team.connections.some((c) => c.source === start?.id && c.target === end?.id)).toBe(
-      true
-    );
+    expect(team.connections.some((c) => c.source === start?.id && c.target === end?.id)).toBe(true);
   });
 
   it('updateTeam should reject teams without a Start node', () => {

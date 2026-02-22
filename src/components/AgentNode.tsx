@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
 import type { Agent } from '../types';
-import { Coins, Terminal, Pause, Play, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Coins, Terminal, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 interface AgentNodeProps {
   data: Agent;
@@ -63,16 +63,9 @@ export const AgentNode: React.FC<AgentNodeProps> = React.memo(({ data }) => {
 
       {/* Body */}
       <div className="p-2">
-        <p className="text-[10px] text-slate-400 leading-tight mb-2 line-clamp-2">{data.summary}</p>
-
-        <div className="flex gap-1.5">
-          <button className="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded bg-slate-800 hover:bg-slate-750 text-[9px] font-medium transition-colors border border-slate-700">
-            <Pause size={8} /> Pause
-          </button>
-          <button className="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded bg-slate-800 hover:bg-slate-750 text-[9px] font-medium transition-colors border border-slate-700">
-            <Play size={8} /> Resume
-          </button>
-        </div>
+        <p className="text-[10px] text-slate-400 leading-tight line-clamp-2">
+          {data.summary || data.description}
+        </p>
       </div>
 
       {/* Logs Section */}
