@@ -16,7 +16,6 @@ export interface DBAgent {
 export interface DBTeam {
   id: string;
   name: string;
-  objective: string | null;
   createdAt: string | null;
 }
 
@@ -56,7 +55,6 @@ export interface Agent {
 export interface Team {
   id: string;
   name: string;
-  objective: string;
   agents: Agent[];
   connections: {
     source: string;

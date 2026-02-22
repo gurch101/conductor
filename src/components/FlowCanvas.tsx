@@ -28,6 +28,17 @@ const getNodeType = (agent: Agent) => {
   if (agent.persona_name === 'Gateway' || agent.persona_id === 'persona-gateway') return 'gateway';
   if (agent.persona_name === 'Start' || agent.persona_id === 'persona-start') return 'start';
   if (agent.persona_name === 'End' || agent.persona_id === 'persona-end') return 'end';
+  if (agent.id.startsWith('agent-start-')) return 'start';
+  if (agent.id.startsWith('agent-end-')) return 'end';
+  if (agent.summary === 'Workflow entry point.' || agent.description === 'Workflow entry point.') {
+    return 'start';
+  }
+  if (
+    agent.summary === 'Workflow completion point.' ||
+    agent.description === 'Workflow completion point.'
+  ) {
+    return 'end';
+  }
   return 'agent';
 };
 
@@ -251,7 +262,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = React.memo(({ team, onUpdat
           tokensUsed: 0,
           input_schema: [],
           output_schema: [],
-          logs: [`Agent ${persona.name} initialized.`],
+          logs: [`Team member ${persona.name} initialized.`],
           pos_x: position.x,
           pos_y: position.y,
         };

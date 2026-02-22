@@ -49,7 +49,7 @@ describe('AgentNode Component', () => {
         }}
       />
     );
-    expect(screen.queryByTitle('Delete Agent')).toBeNull();
+    expect(screen.queryByTitle('Delete Team Member')).toBeNull();
   });
 
   it('hides delete button for End node', () => {
@@ -62,11 +62,11 @@ describe('AgentNode Component', () => {
         }}
       />
     );
-    expect(screen.queryByTitle('Delete Agent')).toBeNull();
+    expect(screen.queryByTitle('Delete Team Member')).toBeNull();
   });
 
   it('shows delete button for non-protected nodes', () => {
     render(<AgentNode data={mockAgent} />);
-    expect(screen.getByTitle('Delete Agent')).toBeDefined();
+    expect(screen.getByTitle('Delete Team Member')).toBeDefined();
   });
 });

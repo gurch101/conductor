@@ -4,6 +4,7 @@ import { TeamService } from './services/TeamService';
 import { PersonaService } from './services/PersonaService';
 import { AgentService } from './services/AgentService';
 import { ConnectionService } from './services/ConnectionService';
+import { TeamStreamService } from './services/TeamStreamService';
 import type { Agent } from './types';
 import index from './index.html';
 
@@ -14,6 +15,21 @@ if (!isTestEnv) {
   initDb();
 }
 
+const encoder = new TextEncoder();
+
+const writeNdjson = (
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  data: unknown
+): void => {
+  controller.enqueue(encoder.encode(`${JSON.stringify(data)}\n`));
+};
+
+const publishTeamSnapshotById = (teamId: string): void => {
+  const team = TeamService.getTeamById(teamId);
+  if (!team) return;
+  TeamStreamService.publishTeamSnapshot(team);
+};
+
 export const appOptions = {
   routes: {
     // API Routes
@@ -21,8 +37,9 @@ export const appOptions = {
       GET: () => Response.json(TeamService.getAllTeams()),
       POST: async (req: Request) => {
         try {
-          const { name, objective } = (await req.json()) as { name: string; objective: string };
-          const team = TeamService.createTeam(name, objective);
+          const { name } = (await req.json()) as { name: string };
+          const team = TeamService.createTeam(name);
+          TeamStreamService.publishTeamSnapshot(team);
           return Response.json(team);
         } catch (error) {
           return new Response(JSON.stringify({ error: (error as Error).message }), {
@@ -42,9 +59,8 @@ export const appOptions = {
       PUT: async (req: Request) => {
         try {
           const id = req.params.id;
-          const { name, objective, agents, connections } = (await req.json()) as {
+          const { name, agents, connections } = (await req.json()) as {
             name: string;
-            objective: string;
             agents?: Agent[];
             connections?: {
               source: string;
@@ -53,7 +69,8 @@ export const appOptions = {
               target_handle?: string;
             }[];
           };
-          TeamService.updateTeam(id, name, objective, agents, connections);
+          TeamService.updateTeam(id, name, agents, connections);
+          publishTeamSnapshotById(id);
           return Response.json({ success: true });
         } catch (error) {
           return new Response(JSON.stringify({ error: (error as Error).message }), {
@@ -63,9 +80,119 @@ export const appOptions = {
         }
       },
       DELETE: (req) => {
-        const id = req.params.id;
-        TeamService.deleteTeam(id);
-        return Response.json({ success: true });
+        try {
+          const id = req.params.id;
+          TeamService.deleteTeam(id);
+          return Response.json({ success: true });
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      },
+    },
+
+    '/api/teams/:id/stream': {
+      GET: (req: Request) => {
+        const teamId = req.params.id;
+        const team = TeamService.getTeamById(teamId);
+        if (!team) return new Response('Not Found', { status: 404 });
+
+        let closeStream = () => {};
+
+        const stream = new ReadableStream<Uint8Array>({
+          start(controller) {
+            let closed = false;
+            let unsubscribe = () => {};
+            closeStream = () => {
+              if (closed) return;
+              closed = true;
+              clearInterval(heartbeat);
+              unsubscribe();
+              try {
+                controller.close();
+              } catch {
+                // stream already closed
+              }
+            };
+
+            const heartbeat = setInterval(() => {
+              writeNdjson(controller, {
+                type: 'heartbeat',
+                ts: new Date().toISOString(),
+              });
+            }, 15000);
+
+            unsubscribe = TeamStreamService.subscribe(teamId, (event) => {
+              writeNdjson(controller, event);
+            });
+
+            req.signal.addEventListener('abort', closeStream);
+
+            writeNdjson(controller, {
+              type: 'stream_open',
+              teamId,
+              ts: new Date().toISOString(),
+            });
+            writeNdjson(controller, {
+              type: 'team_snapshot',
+              team,
+              ts: new Date().toISOString(),
+            });
+          },
+          cancel() {
+            closeStream();
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'application/x-ndjson; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+          },
+        });
+      },
+    },
+
+    '/api/teams/:id/start': {
+      POST: async (req: Request) => {
+        try {
+          const { goal } = (await req.json()) as { goal: string };
+          const team = TeamService.startTeam(req.params.id, goal);
+          TeamStreamService.publishTeamSnapshot(team);
+          for (const agent of team.agents) {
+            TeamStreamService.publishAgentStatus(team.id, agent.id, agent.status);
+          }
+          return Response.json(team);
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      },
+    },
+
+    '/api/teams/:id/respond': {
+      POST: async (req: Request) => {
+        try {
+          const { agentId, message } = (await req.json()) as { agentId: string; message: string };
+          const team = TeamService.respondToAgent(req.params.id, agentId, message);
+          TeamStreamService.publishChatMessage(team.id, agentId, 'user', message);
+          const agent = team.agents.find((a) => a.id === agentId);
+          if (agent) {
+            TeamStreamService.publishAgentStatus(team.id, agentId, agent.status);
+          }
+          TeamStreamService.publishTeamSnapshot(team);
+          return Response.json(team);
+        } catch (error) {
+          return new Response(JSON.stringify({ error: (error as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
       },
     },
 
@@ -92,6 +219,7 @@ export const appOptions = {
       POST: async (req: Request) => {
         const agent = (await req.json()) as Agent;
         AgentService.createAgent(agent);
+        publishTeamSnapshotById(agent.team_id);
         return Response.json({ success: true });
       },
     },
@@ -101,11 +229,19 @@ export const appOptions = {
         const id = req.params.id;
         const { pos_x, pos_y } = (await req.json()) as { pos_x: number; pos_y: number };
         AgentService.updateAgentPosition(id, pos_x, pos_y);
+        const teamId = AgentService.getAgentTeamId(id);
+        if (teamId) {
+          publishTeamSnapshotById(teamId);
+        }
         return Response.json({ success: true });
       },
       DELETE: (req) => {
         const id = req.params.id;
+        const teamId = AgentService.getAgentTeamId(id);
         AgentService.deleteAgent(id);
+        if (teamId) {
+          publishTeamSnapshotById(teamId);
+        }
         return Response.json({ success: true });
       },
     },
@@ -120,6 +256,7 @@ export const appOptions = {
           target_handle: string | null;
         };
         ConnectionService.createConnection(conn);
+        publishTeamSnapshotById(conn.team_id);
         return Response.json({ success: true });
       },
       DELETE: async (req: Request) => {
@@ -131,6 +268,7 @@ export const appOptions = {
           target_handle: string | null;
         };
         ConnectionService.deleteConnection(conn);
+        publishTeamSnapshotById(conn.team_id);
         return Response.json({ success: true });
       },
     },

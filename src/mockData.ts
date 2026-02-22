@@ -5,7 +5,6 @@ export const MOCK_TEAMS: Team[] = [
   {
     id: '1',
     name: 'Research & Content Team',
-    objective: 'Generate a 500-word blog post about Quantum Computing for beginners.',
     agents: [
       {
         id: 'agent-1',
@@ -39,7 +38,6 @@ export const MOCK_TEAMS: Team[] = [
   {
     id: '2',
     name: 'Code Review Squad',
-    objective: 'Review the pull request for the new authentication module.',
     agents: [
       {
         id: 'agent-3',
@@ -69,7 +67,6 @@ export const MOCK_TEAMS: Team[] = [
   {
     id: '3',
     name: 'Release Manager',
-    objective: 'Coordinate the deployment of v2.1.0.',
     agents: [
       {
         id: 'agent-5',

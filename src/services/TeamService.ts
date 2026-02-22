@@ -3,6 +3,7 @@ import { AgentRepository } from '@/repositories/AgentRepository';
 import { ConnectionRepository } from '@/repositories/ConnectionRepository';
 import { PersonaRepository } from '@/repositories/PersonaRepository';
 import { AgentStatus } from '@/constants/agentStatus';
+import { TeamStreamService } from '@/services/TeamStreamService';
 import type { Team, Agent, DBTeam } from '@/types';
 
 /**
@@ -42,13 +43,12 @@ export class TeamService {
   }
 
   /**
-   * Creates a new team with the specified name and objective.
+   * Creates a new team with the specified name.
    * @param name The name of the team.
-   * @param objective The objective of the team.
    * @returns The newly created team.
    * @throws Error if the name is empty or already exists.
    */
-  static createTeam(name: string, objective: string): Team {
+  static createTeam(name: string): Team {
     if (!name || name.trim() === '') {
       throw new Error('Team name is required.');
     }
@@ -56,7 +56,7 @@ export class TeamService {
       throw new Error(`Team name "${name}" is already taken.`);
     }
     const id = crypto.randomUUID();
-    TeamRepository.create(id, name, objective);
+    TeamRepository.create(id, name);
     const startAgent: Agent = {
       id: `agent-start-${crypto.randomUUID()}`,
       team_id: id,
@@ -106,10 +106,9 @@ export class TeamService {
   }
 
   /**
-   * Updates an existing team's name and objective.
+   * Updates an existing team's name.
    * @param id The ID of the team.
    * @param name The new name.
-   * @param objective The new objective.
    * @param agents
    * @param connections
    * @throws Error if the name is empty or already exists for another team.
@@ -117,7 +116,6 @@ export class TeamService {
   static updateTeam(
     id: string,
     name: string,
-    objective: string,
     agents?: Agent[],
     connections?: {
       source: string;
@@ -133,14 +131,14 @@ export class TeamService {
       throw new Error(`Team name "${name}" is already taken.`);
     }
     if (agents && connections) {
-      this.ensureStartEndAndPath({ id, name, objective, agents, connections });
+      this.ensureStartEndAndPath({ id, name, agents, connections });
     } else {
       const current = this.getTeamById(id);
       if (current) {
         this.ensureStartEndAndPath(current);
       }
     }
-    TeamRepository.update(id, name, objective);
+    TeamRepository.update(id, name);
     if (agents && connections) {
       this.syncAgents(id, agents);
       this.syncConnections(id, connections);
@@ -152,6 +150,9 @@ export class TeamService {
    * @param id The ID of the team to delete.
    */
   static deleteTeam(id: string): void {
+    if (TeamStreamService.hasActiveSubscribers(id)) {
+      throw new Error('Cannot delete a team that is currently active.');
+    }
     TeamRepository.delete(id);
   }
 
@@ -310,6 +311,100 @@ export class TeamService {
   }
 
   /**
+   * Starts orchestration for a team and seeds initial runtime state.
+   * @param id The ID of the team.
+   * @param initialGoal
+   * @returns The updated hydrated team.
+   * @throws Error if the team does not exist or has no agents.
+   */
+  static startTeam(id: string, initialGoal: string): Team {
+    const team = TeamRepository.findById(id);
+    if (!team) {
+      throw new Error('Team not found.');
+    }
+
+    const agents = AgentRepository.findByTeamId(id);
+    if (agents.length === 0) {
+      throw new Error('Cannot start a team with no agents.');
+    }
+
+    const activeAgents = agents.filter(
+      (agent) =>
+        agent.personaId !== 'persona-start' &&
+        agent.personaId !== 'persona-end' &&
+        agent.personaId !== 'persona-gateway'
+    );
+    if (activeAgents.length === 0) {
+      throw new Error('Cannot start a team with only system agents.');
+    }
+
+    if (!initialGoal || initialGoal.trim() === '') {
+      throw new Error('Initial goal is required to start a team.');
+    }
+
+    for (const agent of activeAgents) {
+      if (agent.status !== AgentStatus.Done) {
+        AgentRepository.updateStatus(agent.id, AgentStatus.Working);
+      }
+    }
+
+    const nextAgents = this.getNextAgents(id).filter(
+      (agent) =>
+        agent.persona_id !== 'persona-start' &&
+        agent.persona_id !== 'persona-end' &&
+        agent.persona_id !== 'persona-gateway'
+    );
+    const leadAgent =
+      nextAgents[0] ||
+      activeAgents.find((agent) => agent.status !== AgentStatus.Done) ||
+      activeAgents[0]!;
+    AgentRepository.addLog(leadAgent.id, 'Orchestrator started team execution.');
+    AgentRepository.addLog(leadAgent.id, `Initial goal: ${initialGoal.trim()}`);
+
+    const reviewerAgent = activeAgents.find(
+      (agent) => agent.id !== leadAgent.id && agent.status !== AgentStatus.Done
+    );
+    const approvalAgent = reviewerAgent || leadAgent;
+    AgentRepository.updateStatus(approvalAgent.id, AgentStatus.WaitingForFeedback);
+    AgentRepository.addLog(
+      approvalAgent.id,
+      'Needs clarification and access approval before continuing execution.'
+    );
+
+    return this.hydrateTeam(team);
+  }
+
+  /**
+   * Posts a human response to an agent during orchestration.
+   * @param teamId The team ID.
+   * @param agentId The target agent ID.
+   * @param message The user's response.
+   * @returns The updated hydrated team.
+   * @throws Error if team, agent, or message is invalid.
+   */
+  static respondToAgent(teamId: string, agentId: string, message: string): Team {
+    const team = TeamRepository.findById(teamId);
+    if (!team) {
+      throw new Error('Team not found.');
+    }
+
+    if (!message || message.trim() === '') {
+      throw new Error('Response message is required.');
+    }
+
+    const agent = AgentRepository.findById(agentId);
+    if (!agent || agent.teamId !== teamId) {
+      throw new Error('Agent not found for this team.');
+    }
+
+    AgentRepository.addLog(agentId, `Human response: ${message.trim()}`);
+    AgentRepository.updateStatus(agentId, AgentStatus.Working);
+    AgentRepository.addLog(agentId, 'Human response received. Continuing execution.');
+
+    return this.hydrateTeam(team);
+  }
+
+  /**
    * Hydrates a database team object with its related agents, logs, and connections.
    * @param team The database team object.
    * @returns The fully hydrated team domain object.
@@ -351,7 +446,6 @@ export class TeamService {
     return {
       id: team.id,
       name: team.name,
-      objective: team.objective || '',
       agents: agentsWithLogs,
       connections: mappedConnections,
     };

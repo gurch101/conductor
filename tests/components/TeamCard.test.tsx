@@ -13,27 +13,49 @@ describe('TeamCard Component', () => {
   const mockTeam: Team = {
     id: '1',
     name: 'Test Team',
-    objective: 'Test Objective',
     agents: [],
     connections: [],
   };
 
-  it('renders team name and objective', () => {
-    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={() => {}} />);
+  it('renders team name', () => {
+    render(
+      <TeamCard
+        team={mockTeam}
+        onClick={() => {}}
+        onPlay={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    );
     expect(screen.getByText('Test Team')).toBeDefined();
-    expect(screen.getByText('Test Objective')).toBeDefined();
   });
 
   it('calls onClick when the card is clicked', () => {
     const handleClick = mock(() => {});
-    render(<TeamCard team={mockTeam} onClick={handleClick} onDelete={() => {}} />);
+    render(
+      <TeamCard
+        team={mockTeam}
+        onClick={handleClick}
+        onPlay={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    );
     fireEvent.click(screen.getByText('Test Team'));
     expect(handleClick).toHaveBeenCalled();
   });
 
   it('calls onDelete when the delete option is clicked in the menu', () => {
     const handleDelete = mock(() => {});
-    render(<TeamCard team={mockTeam} onClick={() => {}} onDelete={handleDelete} />);
+    render(
+      <TeamCard
+        team={mockTeam}
+        onClick={() => {}}
+        onPlay={() => {}}
+        onEdit={() => {}}
+        onDelete={handleDelete}
+      />
+    );
 
     // 1. Click menu button (MoreVertical icon button)
     const menuButton = screen.getByLabelText('Open menu');
@@ -63,7 +85,15 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithDoneAgents} onClick={() => {}} onDelete={() => {}} />);
+    render(
+      <TeamCard
+        team={teamWithDoneAgents}
+        onClick={() => {}}
+        onPlay={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    );
     expect(screen.getByText('Done')).toBeDefined();
   });
 
@@ -95,7 +125,48 @@ describe('TeamCard Component', () => {
         },
       ],
     };
-    render(<TeamCard team={teamWithActionNeeded} onClick={() => {}} onDelete={() => {}} />);
+    render(
+      <TeamCard
+        team={teamWithActionNeeded}
+        onClick={() => {}}
+        onPlay={() => {}}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    );
     expect(screen.getByText('Action Needed')).toBeDefined();
+  });
+
+  it('calls onPlay when start button is clicked', () => {
+    const handlePlay = mock(() => {});
+    render(
+      <TeamCard
+        team={mockTeam}
+        onClick={() => {}}
+        onPlay={handlePlay}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />
+    );
+    fireEvent.click(screen.getByLabelText('Start Test Team'));
+    expect(handlePlay).toHaveBeenCalledWith(mockTeam);
+  });
+
+  it('calls onEdit when edit option is clicked in the menu', () => {
+    const handleEdit = mock(() => {});
+    render(
+      <TeamCard
+        team={mockTeam}
+        onClick={() => {}}
+        onPlay={() => {}}
+        onEdit={handleEdit}
+        onDelete={() => {}}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    fireEvent.click(screen.getByText('Edit Team'));
+
+    expect(handleEdit).toHaveBeenCalledWith(mockTeam);
   });
 });
