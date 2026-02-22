@@ -89,11 +89,7 @@ export class TeamStreamService {
    * @param agentId Agent identifier.
    * @param status New agent status.
    */
-  static publishAgentStatus(
-    teamId: string,
-    agentId: string,
-    status: AgentStatusValue
-  ): void {
+  static publishAgentStatus(teamId: string, agentId: string, status: AgentStatusValue): void {
     this.publish(teamId, {
       type: 'agent_status',
       teamId,
